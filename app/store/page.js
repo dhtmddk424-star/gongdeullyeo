@@ -64,6 +64,11 @@ export default function Store() {
     setUploading(false)
   }
 
+  const deleteMaterial = async (id) => {
+    await supabase.from('materials').delete().eq('id', id)
+    setMaterials(materials.filter(m => m.id !== id))
+  }
+
   const timeAgo = (date) => {
     const diff = Math.floor((new Date() - new Date(date)) / 1000)
     if (diff < 60) return '방금 전'
@@ -168,6 +173,9 @@ export default function Store() {
                 </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+                {user?.id === item.user_id && (
+                  <span onClick={() => deleteMaterial(item.id)} style={{ fontSize: '14px', color: '#D4C8B8', cursor: 'pointer' }}>×</span>
+                )}
                 {item.is_paid ? (
                   <>
                     <span style={{ fontSize: '14px', fontWeight: '500', color: '#C9A882' }}>{item.price?.toLocaleString()}원</span>
