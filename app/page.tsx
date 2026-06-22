@@ -99,6 +99,16 @@ export default function Home() {
           <button onClick={() => router.push('/community')} style={{ background: 'transparent', color: '#9A8A78', border: '0.5px solid #D4C8B8', borderRadius: '24px', padding: '12px 28px', fontSize: '15px', cursor: 'pointer' }}>둘러보기</button>
         </div>
       </section>
+
+      <section style={{ padding: '0 2rem 4rem', textAlign: 'center' }}>
+        <div style={{ background: 'linear-gradient(135deg, #FAF0E4, #FFF8F0)', borderRadius: '16px', border: '1.5px solid #C9A882', padding: '2rem', maxWidth: '480px', margin: '0 auto' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: '500', color: '#4A3728', marginBottom: '8px' }}>프리미엄으로 더 똑똑하게</h2>
+          <p style={{ fontSize: '14px', color: '#9A8A78', lineHeight: '1.7', marginBottom: '16px' }}>
+            AI가 학습 계획을 파싱하고<br />주간/월간 맞춤 리포트를 제공해요
+          </p>
+          <button onClick={() => router.push('/subscribe')} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '20px', padding: '10px 24px', fontSize: '14px', cursor: 'pointer' }}>프리미엄 알아보기</button>
+        </div>
+      </section>
     </main>
   )
 }

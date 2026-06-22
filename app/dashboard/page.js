@@ -234,6 +234,18 @@ export default function Dashboard() {
           )}
         </div>
 
+        {/* 프리미엄 기능 */}
+        <div style={{ background: 'linear-gradient(135deg, #FAF0E4, #FFF8F0)', borderRadius: '12px', border: '1.5px solid #C9A882', padding: '1.25rem', marginBottom: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+            <span style={{ fontSize: '13px', color: '#6B5B45', fontWeight: '500' }}>프리미엄 기능</span>
+            <span style={{ background: '#C9A882', color: '#fff', fontSize: '10px', padding: '2px 6px', borderRadius: '8px' }}>PRO</span>
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button onClick={() => router.push('/ai-planner')} style={{ flex: 1, background: '#C9A882', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px', fontSize: '13px', cursor: 'pointer' }}>AI 플래너 파싱</button>
+            <button onClick={() => router.push('/report')} style={{ flex: 1, background: '#C9A882', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px', fontSize: '13px', cursor: 'pointer' }}>AI 학습 리포트</button>
+          </div>
+        </div>
+
         {/* 주간 공부 시간 차트 */}
         <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1.25rem' }}>
           <span style={{ fontSize: '13px', color: '#6B5B45', fontWeight: '500', display: 'block', marginBottom: '16px' }}>주간 공부 시간</span>
