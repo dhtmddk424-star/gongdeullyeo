@@ -39,7 +39,7 @@ export default function Login() {
             placeholder="이메일"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+            style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '14px', outline: 'none', boxSizing: 'border-box', color: '#4a3728' }}
           />
         </div>
         <div style={{ marginBottom: '20px' }}>
@@ -48,7 +48,7 @@ export default function Login() {
             placeholder="비밀번호"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+            style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '14px', outline: 'none', boxSizing: 'border-box', color: '#4a3728' }}
           />
         </div>
 
@@ -65,7 +65,7 @@ export default function Login() {
         </button>
 
         <p style={{ fontSize: '13px', color: '#9A8A78', textAlign: 'center', cursor: 'pointer' }} onClick={() => setIsSignUp(!isSignUp)}>
-          {isSignUp ? '이미 계정이 있어요 → 로그인' : '처음이에요 → 회원가입'}
+          {isSignUp ? '로그인' : '회원가입'}
         </p>
       </div>
     </main>
