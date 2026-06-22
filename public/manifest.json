@@ -1,0 +1,21 @@
+{
+  "name": "공들여",
+  "short_name": "공들여",
+  "description": "매일 조금씩, 공들여 쌓아가요",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF7F2",
+  "theme_color": "#C9A882",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

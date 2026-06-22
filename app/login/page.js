@@ -1,8 +1,10 @@
 'use client'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 
 export default function Login() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
@@ -12,7 +14,7 @@ export default function Login() {
   const handleAuth = async () => {
     setLoading(true)
     setMessage('')
-    
+
     if (isSignUp) {
       const { error } = await supabase.auth.signUp({ email, password })
       if (error) setMessage(error.message)
@@ -20,7 +22,7 @@ export default function Login() {
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) setMessage('이메일 또는 비밀번호가 틀렸어요.')
-      else window.location.href = '/'
+      else router.push('/')
     }
     setLoading(false)
   }
@@ -67,6 +69,20 @@ export default function Login() {
         <p style={{ fontSize: '13px', color: '#9A8A78', textAlign: 'center', cursor: 'pointer' }} onClick={() => setIsSignUp(!isSignUp)}>
           {isSignUp ? '로그인' : '회원가입'}
         </p>
+
+        {!isSignUp && (
+          <p
+            style={{ fontSize: '12px', color: '#C4B8A8', textAlign: 'center', cursor: 'pointer', marginTop: '12px' }}
+            onClick={async () => {
+              if (!email) { setMessage('이메일을 먼저 입력해주세요.'); return }
+              const { error } = await supabase.auth.resetPasswordForEmail(email)
+              if (error) setMessage(error.message)
+              else setMessage('비밀번호 재설정 링크를 이메일로 보냈어요!')
+            }}
+          >
+            비밀번호를 잊으셨나요?
+          </p>
+        )}
       </div>
     </main>
   )

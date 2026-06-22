@@ -1,8 +1,11 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
+import { getNicknames } from '../../lib/getNickname'
 
 export default function Store() {
+  const router = useRouter()
   const [materials, setMaterials] = useState([])
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -10,6 +13,7 @@ export default function Store() {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ title: '', description: '', price: 0, is_paid: false })
   const [file, setFile] = useState(null)
+  const [nicknames, setNicknames] = useState({})
   const fileRef = useRef()
 
   useEffect(() => {
@@ -23,7 +27,13 @@ export default function Store() {
 
   const fetchMaterials = async () => {
     const { data } = await supabase.from('materials').select('*').order('created_at', { ascending: false })
-    setMaterials(data || [])
+    const list = data || []
+    setMaterials(list)
+    if (list.length > 0) {
+      const ids = [...new Set(list.map(m => m.user_id))]
+      const nicks = await getNicknames(ids)
+      setNicknames(nicks)
+    }
     setLoading(false)
   }
 
@@ -34,7 +44,7 @@ export default function Store() {
     const ext = file.name.split('.').pop()
     const fileName = `${user.id}-${Date.now()}.${ext}`
     const { error } = await supabase.storage.from('materials').upload(fileName, file)
-    
+
     if (!error) {
       const { data: urlData } = supabase.storage.from('materials').getPublicUrl(fileName)
       await supabase.from('materials').insert({
@@ -67,12 +77,17 @@ export default function Store() {
   return (
     <main style={{ minHeight: '100vh', background: '#FAF7F2', fontFamily: 'sans-serif' }}>
       <nav style={{ background: '#FAF7F2', borderBottom: '0.5px solid #E8E0D4', padding: '0 2rem', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: '17px', fontWeight: '500', color: '#6B5B45', cursor: 'pointer' }} onClick={() => window.location.href='/'}>공들여 📖</div>
+        <div style={{ fontSize: '17px', fontWeight: '500', color: '#6B5B45', cursor: 'pointer' }} onClick={() => router.push('/')}>공들여 📖</div>
         <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <span style={{ fontSize: '13px', color: '#9A8A78', cursor: 'pointer' }} onClick={() => window.location.href='/planner'}>플래너</span>
-          <span style={{ fontSize: '13px', color: '#9A8A78', cursor: 'pointer' }} onClick={() => window.location.href='/community'}>커뮤니티</span>
+          <span style={{ fontSize: '13px', color: '#9A8A78', cursor: 'pointer' }} onClick={() => router.push('/planner')}>플래너</span>
+          <span style={{ fontSize: '13px', color: '#9A8A78', cursor: 'pointer' }} onClick={() => router.push('/dashboard')}>대시보드</span>
+          <span style={{ fontSize: '13px', color: '#9A8A78', cursor: 'pointer' }} onClick={() => router.push('/community')}>커뮤니티</span>
           <span style={{ fontSize: '13px', color: '#C9A882', fontWeight: '500' }}>자료</span>
-          {user && <button onClick={async () => { await supabase.auth.signOut(); window.location.href='/' }} style={{ background: 'transparent', color: '#9A8A78', border: '0.5px solid #D4C8B8', borderRadius: '20px', padding: '6px 16px', fontSize: '13px', cursor: 'pointer' }}>로그아웃</button>}
+          {user ? (
+            <button onClick={async () => { await supabase.auth.signOut(); router.push('/') }} style={{ background: 'transparent', color: '#9A8A78', border: '0.5px solid #D4C8B8', borderRadius: '20px', padding: '6px 16px', fontSize: '13px', cursor: 'pointer' }}>로그아웃</button>
+          ) : (
+            <button onClick={() => router.push('/login')} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '20px', padding: '6px 16px', fontSize: '13px', cursor: 'pointer' }}>로그인</button>
+          )}
         </div>
       </nav>
 
@@ -147,7 +162,7 @@ export default function Store() {
                 {item.description && <p style={{ fontSize: '12px', color: '#9A8A78', marginBottom: '4px' }}>{item.description}</p>}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#C4B8A8' }}>
                   <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#E8D9C8', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', color: '#6B5B45', fontWeight: '500' }}>
-                    {item.user_id?.slice(0,2).toUpperCase()}
+                    {(nicknames[item.user_id] || '??').slice(0, 1)}
                   </div>
                   <span>{timeAgo(item.created_at)}</span>
                 </div>
@@ -158,8 +173,10 @@ export default function Store() {
                     <span style={{ fontSize: '14px', fontWeight: '500', color: '#C9A882' }}>{item.price?.toLocaleString()}원</span>
                     <button onClick={() => alert('결제 기능 준비 중이에요!')} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '16px', padding: '5px 14px', fontSize: '12px', cursor: 'pointer' }}>구매하기</button>
                   </>
-                ) : (
+                ) : user ? (
                   <a href={item.file_url} target="_blank" rel="noreferrer" style={{ background: 'transparent', color: '#9A8A78', border: '0.5px solid #E8E0D4', borderRadius: '16px', padding: '5px 14px', fontSize: '12px', cursor: 'pointer', textDecoration: 'none' }}>다운로드</a>
+                ) : (
+                  <button onClick={() => router.push('/login')} style={{ background: 'transparent', color: '#C9A882', border: '0.5px solid #C9A882', borderRadius: '16px', padding: '5px 14px', fontSize: '12px', cursor: 'pointer' }}>로그인 필요</button>
                 )}
               </div>
             </div>
