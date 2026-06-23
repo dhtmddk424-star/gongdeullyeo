@@ -10,8 +10,6 @@ export default function Login() {
   const [isSignUp, setIsSignUp] = useState(false)
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
-  const [showOtp, setShowOtp] = useState(false)
-  const [otp, setOtp] = useState('')
   const [autoLogin, setAutoLogin] = useState(true)
 
   const handleAuth = async () => {
@@ -29,8 +27,7 @@ export default function Login() {
       if (error) {
         setMessage(error.message)
       } else {
-        setShowOtp(true)
-        setMessage('이메일로 6자리 인증번호를 보냈어요!')
+        setMessage('이메일로 인증 링크를 보냈어요! 확인해주세요.')
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
@@ -40,18 +37,6 @@ export default function Login() {
         else localStorage.removeItem('auto-login')
         router.push('/')
       }
-    }
-    setLoading(false)
-  }
-
-  const verifyOtp = async () => {
-    setLoading(true)
-    setMessage('')
-    const { error } = await supabase.auth.verifyOtp({ email, token: otp, type: 'signup' })
-    if (error) {
-      setMessage('인증번호가 올바르지 않아요. 다시 확인해주세요.')
-    } else {
-      router.push('/')
     }
     setLoading(false)
   }
@@ -79,35 +64,10 @@ export default function Login() {
           <h1 style={{ fontSize: '22px', fontWeight: '500', color: '#4A3728', margin: 0 }}>공로그</h1>
         </div>
         <p style={{ fontSize: '14px', color: '#9A8A78', textAlign: 'center', marginBottom: '2rem' }}>
-          {showOtp ? '이메일로 받은 인증번호를 입력하세요' : isSignUp ? '계정을 만들어요' : '다시 만나서 반가워요'}
+          {isSignUp ? '계정을 만들어요' : '다시 만나서 반가워요'}
         </p>
 
-        {showOtp ? (
-          <>
-            <div style={{ marginBottom: '20px' }}>
-              <input
-                type="text"
-                placeholder="6자리 인증번호"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                maxLength={6}
-                style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '20px', outline: 'none', boxSizing: 'border-box', color: '#4a3728', textAlign: 'center', letterSpacing: '8px', fontWeight: '600' }}
-              />
-            </div>
-
-            {message && <p style={{ fontSize: '13px', color: '#C9A882', marginBottom: '16px', textAlign: 'center' }}>{message}</p>}
-
-            <button onClick={verifyOtp} disabled={loading || otp.length !== 6} style={{ width: '100%', background: '#C9A882', color: '#fff', border: 'none', borderRadius: '24px', padding: '12px', fontSize: '15px', cursor: 'pointer', marginBottom: '16px', opacity: otp.length !== 6 ? 0.5 : 1 }}>
-              {loading ? '확인 중...' : '인증하기'}
-            </button>
-
-            <p style={{ fontSize: '12px', color: '#C4B8A8', textAlign: 'center', cursor: 'pointer' }} onClick={() => { setShowOtp(false); setOtp(''); setMessage('') }}>
-              돌아가기
-            </p>
-          </>
-        ) : (
-          <>
-            <div style={{ marginBottom: '12px' }}>
+        <div style={{ marginBottom: '12px' }}>
               <input
                 type="email"
                 placeholder="이메일"
@@ -148,8 +108,6 @@ export default function Login() {
                 비밀번호를 잊으셨나요?
               </p>
             )}
-          </>
-        )}
       </div>
     </main>
   )
