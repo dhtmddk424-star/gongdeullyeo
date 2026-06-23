@@ -5,7 +5,7 @@ export default function FloatingNav() {
   const router = useRouter()
   const pathname = usePathname()
 
-  if (pathname === '/' || pathname === '/login') return null
+  if (pathname === '/') return null
 
   return (
     <div style={{ position: 'fixed', bottom: '40px', right: '24px', display: 'flex', flexDirection: 'column', gap: '8px', zIndex: 150 }}>
