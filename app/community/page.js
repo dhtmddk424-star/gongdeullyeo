@@ -30,6 +30,8 @@ function Community() {
   const [editingAnn, setEditingAnn] = useState(null)
   const [expandedAnns, setExpandedAnns] = useState(new Set())
   const [menuOpen, setMenuOpen] = useState(null)
+  const [editingPost, setEditingPost] = useState(null)
+  const [editPostContent, setEditPostContent] = useState('')
   const annFileRef = useRef()
   const [tags, setTags] = useState([])
   const [filterTag, setFilterTag] = useState('')
@@ -161,6 +163,20 @@ function Community() {
   const togglePin = async (postId, currentPinned) => {
     await supabase.from('posts').update({ pinned: !currentPinned }).eq('id', postId)
     setPosts(posts.map(p => p.id === postId ? { ...p, pinned: !currentPinned } : p))
+  }
+
+  const saveEditPost = async (postId) => {
+    if (!editPostContent.trim()) return
+    await supabase.from('posts').update({ content: editPostContent }).eq('id', postId)
+    setPosts(posts.map(p => p.id === postId ? { ...p, content: editPostContent } : p))
+    setEditingPost(null)
+    setEditPostContent('')
+  }
+
+  const canEdit = (post) => {
+    if (user?.id !== post.user_id) return false
+    const diff = Date.now() - new Date(post.created_at).getTime()
+    return diff < 3600000
   }
 
   const deleteComment = async (commentId, postId) => {
@@ -354,8 +370,8 @@ function Community() {
                       <span onClick={() => setMenuOpen(menuOpen === post.id ? null : post.id)} style={{ fontSize: '16px', color: '#C4B8A8', cursor: 'pointer', padding: '0 4px' }}>⋮</span>
                       {menuOpen === post.id && (
                         <div style={{ position: 'absolute', right: 0, top: '24px', background: '#fff', borderRadius: '8px', border: '0.5px solid #E8E0D4', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', zIndex: 10, minWidth: '100px', overflow: 'hidden' }}>
-                          {user?.id === post.user_id && (
-                            <div onClick={() => { setMenuOpen(null); const newContent = prompt('수정할 내용:', post.content); if (newContent !== null) { supabase.from('posts').update({ content: newContent }).eq('id', post.id).then(() => { setPosts(posts.map(p => p.id === post.id ? { ...p, content: newContent } : p)) }) } }} style={{ padding: '10px 14px', fontSize: '13px', color: '#6B5B45', cursor: 'pointer', borderBottom: '0.5px solid #F0EAE0' }}>
+                          {canEdit(post) && (
+                            <div onClick={() => { setMenuOpen(null); setEditingPost(post.id); setEditPostContent(post.content) }} style={{ padding: '10px 14px', fontSize: '13px', color: '#6B5B45', cursor: 'pointer', borderBottom: '0.5px solid #F0EAE0' }}>
                               수정
                             </div>
                           )}
@@ -373,7 +389,17 @@ function Community() {
                   )}
                 </div>
               </div>
-              <p style={{ fontSize: '14px', color: '#4A3728', lineHeight: '1.6', margin: 0 }}>{post.content}</p>
+              {editingPost === post.id ? (
+                <div>
+                  <textarea value={editPostContent} onChange={(e) => setEditPostContent(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '14px', outline: 'none', color: '#4A3728', background: '#FAF7F2', resize: 'vertical', minHeight: '60px', boxSizing: 'border-box', fontFamily: 'sans-serif' }} />
+                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '6px' }}>
+                    <button onClick={() => setEditingPost(null)} style={{ background: 'transparent', color: '#C4B8A8', border: 'none', fontSize: '12px', cursor: 'pointer' }}>취소</button>
+                    <button onClick={() => saveEditPost(post.id)} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '14px', padding: '5px 14px', fontSize: '12px', cursor: 'pointer' }}>저장</button>
+                  </div>
+                </div>
+              ) : (
+                <p style={{ fontSize: '14px', color: '#4A3728', lineHeight: '1.6', margin: 0 }}>{post.content}</p>
+              )}
               {post.tags && post.tags.length > 0 && (
                 <div style={{ display: 'flex', gap: '6px', marginTop: '8px', flexWrap: 'wrap' }}>
                   {post.tags.map(t => (
