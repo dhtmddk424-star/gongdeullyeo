@@ -156,77 +156,29 @@ export default function Planner() {
   const openExport = () => {
     const totalMin = sessions.reduce((s, v) => s + v.duration_minutes, 0)
     setExportData({
-      quote: '"꾸준함은 재능을 이긴다."',
-      studyTime: totalMin > 0 ? `${Math.floor(totalMin / 60)}시간 ${totalMin % 60}분` : '',
+      quote: '다시 시작하는 마음가짐으로',
+      studyTime: totalMin > 0 ? `${Math.floor(totalMin / 60)}h ${totalMin % 60}m` : '',
       showTime: totalMin > 0,
       selectedDday: ddays.length > 0 ? ddays[0] : null,
+      version: 1,
+      showFeedback: !!feedback,
     })
     setShowExport(true)
   }
 
-  const generateCard = () => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    const w = 1080, h = 1350
-    canvas.width = w; canvas.height = h
+  const getDdayText = (d) => {
+    if (!d) return ''
+    const today = new Date(); today.setHours(0,0,0,0)
+    const target = new Date(d.target_date + 'T00:00:00')
+    const diff = Math.ceil((target.getTime() - today.getTime()) / 86400000)
+    return diff === 0 ? 'D-DAY' : diff > 0 ? `-${diff}` : `+${Math.abs(diff)}`
+  }
 
-    // 배경
-    ctx.fillStyle = '#FAF7F2'
-    ctx.fillRect(0, 0, w, h)
-    ctx.strokeStyle = '#E8E0D4'; ctx.lineWidth = 3
-    ctx.strokeRect(40, 40, w - 80, h - 80)
-
-    // 헤더
-    ctx.fillStyle = '#4A3728'; ctx.font = 'bold 42px sans-serif'; ctx.textAlign = 'center'
-    ctx.fillText('공들여', w / 2, 120)
-
-    const dateObj = new Date(selectedDate + 'T00:00:00')
-    const dateStr = dateObj.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' })
-    ctx.fillStyle = '#9A8A78'; ctx.font = '26px sans-serif'
-    ctx.fillText(dateStr, w / 2, 165)
-
-    if (nickname) {
-      ctx.fillStyle = '#6B5B45'; ctx.font = '24px sans-serif'
-      ctx.fillText(`${nickname}님의 하루`, w / 2, 205)
-    }
-
-    // 진행도 바
-    const pct = goals.length ? Math.round((goals.filter(g => g.done).length / goals.length) * 100) : 0
-    ctx.fillStyle = '#F0EAE0'
-    ctx.beginPath(); ctx.roundRect(100, 240, w - 200, 24, 12); ctx.fill()
-    if (pct > 0) { ctx.fillStyle = '#C9A882'; ctx.beginPath(); ctx.roundRect(100, 240, (w - 200) * pct / 100, 24, 12); ctx.fill() }
-    ctx.fillStyle = '#6B5B45'; ctx.font = 'bold 22px sans-serif'; ctx.textAlign = 'right'
-    ctx.fillText(`${goals.filter(g => g.done).length}/${goals.length} (${pct}%)`, w - 100, 235)
-
-    // 할일 목록
-    ctx.textAlign = 'left'; let y = 300
-    goals.slice(0, 14).forEach(goal => {
-      if (goal.done) {
-        ctx.fillStyle = '#C9A882'; ctx.beginPath(); ctx.roundRect(100, y - 14, 26, 26, 5); ctx.fill()
-        ctx.fillStyle = '#fff'; ctx.font = 'bold 18px sans-serif'; ctx.fillText('✓', 106, y + 4)
-      } else {
-        ctx.strokeStyle = '#D4C8B8'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.roundRect(100, y - 14, 26, 26, 5); ctx.stroke()
-      }
-      ctx.fillStyle = goal.done ? '#C4B8A8' : '#4A3728'; ctx.font = '24px sans-serif'
-      ctx.fillText(goal.text.length > 30 ? goal.text.slice(0, 30) + '...' : goal.text, 140, y + 4)
-      y += 44
-    })
-
-    // 피드백
-    if (feedback) {
-      y = Math.max(y + 20, h - 280)
-      ctx.fillStyle = '#C9A882'; ctx.globalAlpha = 0.1
-      ctx.beginPath(); ctx.roundRect(80, y, w - 160, 80, 12); ctx.fill(); ctx.globalAlpha = 1
-      ctx.fillStyle = '#6B5B45'; ctx.font = 'italic 22px sans-serif'; ctx.textAlign = 'center'
-      ctx.fillText(`"${feedback.length > 50 ? feedback.slice(0, 50) + '...' : feedback}"`, w / 2, y + 45)
-    }
-
-    // 하단
-    ctx.fillStyle = '#D4C8B8'; ctx.font = '20px sans-serif'; ctx.textAlign = 'center'
-    ctx.fillText('gongdeullyeo.vercel.app', w / 2, h - 70)
-
-    // 다운로드
+  const downloadCard = async () => {
+    const el = document.getElementById('card-preview')
+    if (!el) return
+    const html2canvas = (await import('html2canvas')).default
+    const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#3A2E22' })
     const link = document.createElement('a')
     link.download = `공들여_${selectedDate}.png`
     link.href = canvas.toDataURL('image/png')
@@ -391,71 +343,150 @@ export default function Planner() {
       </section>
 
       {/* 이미지 저장 팝업 */}
-      {showExport && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-          <div style={{ background: '#FAF7F2', borderRadius: '16px', width: '100%', maxWidth: '440px', maxHeight: '90vh', overflow: 'auto', padding: '1.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: '500', color: '#4A3728', margin: 0 }}>인스타 카드 만들기</h2>
-              <span onClick={() => setShowExport(false)} style={{ fontSize: '20px', color: '#9A8A78', cursor: 'pointer' }}>×</span>
-            </div>
+      {showExport && (() => {
+        const dateObj = new Date(selectedDate + 'T00:00:00')
+        const dateStr = dateObj.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })
+        const doneCount = goals.filter(g => g.done).length
+        const pct = goals.length ? Math.round((doneCount / goals.length) * 100) : 0
+        const streakCount = 0
+        const grouped = {}
+        goals.forEach(g => {
+          const sub = subjects.find(s => s.id === g.subject_id)
+          const key = sub ? sub.name : '기타'
+          if (!grouped[key]) grouped[key] = { goals: [], color: sub?.color || '#9A8A78' }
+          grouped[key].goals.push(g)
+        })
 
-            {/* D-day 선택 */}
-            <div style={{ marginBottom: '12px' }}>
-              <label style={{ fontSize: '12px', color: '#6B5B45', fontWeight: '500', display: 'block', marginBottom: '6px' }}>D-day (선택)</label>
-              <select value={exportData.selectedDday?.id || ''} onChange={(e) => {
-                const d = ddays.find(dd => dd.id === Number(e.target.value))
-                setExportData({ ...exportData, selectedDday: d || null })
-              }} style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '13px', color: '#4A3728', outline: 'none' }}>
-                <option value="">없음</option>
-                {ddays.map(d => <option key={d.id} value={d.id}>{d.title}</option>)}
-              </select>
-            </div>
-
-            {/* 명언 수정 */}
-            <div style={{ marginBottom: '12px' }}>
-              <label style={{ fontSize: '12px', color: '#6B5B45', fontWeight: '500', display: 'block', marginBottom: '6px' }}>명언</label>
-              <input value={exportData.quote} onChange={(e) => setExportData({ ...exportData, quote: e.target.value })} style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '13px', color: '#4A3728', outline: 'none', boxSizing: 'border-box' }} />
-            </div>
-
-            {/* 공부 시간 */}
-            <div style={{ marginBottom: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                <label style={{ fontSize: '12px', color: '#6B5B45', fontWeight: '500' }}>공부 시간</label>
-                <label style={{ fontSize: '11px', color: '#9A8A78', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                  <input type="checkbox" checked={exportData.showTime} onChange={(e) => setExportData({ ...exportData, showTime: e.target.checked })} /> 표시
+        return (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 200, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '1rem', overflow: 'auto' }}>
+          <div style={{ width: '100%', maxWidth: '480px', padding: '1rem 0' }}>
+            {/* 옵션 */}
+            <div style={{ background: '#FAF7F2', borderRadius: '12px', padding: '1rem', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <h2 style={{ fontSize: '16px', fontWeight: '500', color: '#4A3728', margin: 0 }}>카드 만들기</h2>
+                <span onClick={() => setShowExport(false)} style={{ fontSize: '18px', color: '#9A8A78', cursor: 'pointer' }}>×</span>
+              </div>
+              <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+                <span onClick={() => setExportData({...exportData, version: 1})} style={{ fontSize: '11px', padding: '4px 10px', borderRadius: '10px', cursor: 'pointer', background: exportData.version === 1 ? '#4A3728' : '#fff', color: exportData.version === 1 ? '#fff' : '#9A8A78', border: '0.5px solid #E8E0D4' }}>버전1 체크리스트</span>
+                <span onClick={() => setExportData({...exportData, version: 2})} style={{ fontSize: '11px', padding: '4px 10px', borderRadius: '10px', cursor: 'pointer', background: exportData.version === 2 ? '#4A3728' : '#fff', color: exportData.version === 2 ? '#fff' : '#9A8A78', border: '0.5px solid #E8E0D4' }}>버전2 +타임테이블</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '12px' }}>
+                <div>
+                  <label style={{ color: '#6B5B45', display: 'block', marginBottom: '4px' }}>D-day</label>
+                  <select value={exportData.selectedDday?.id || ''} onChange={(e) => setExportData({...exportData, selectedDday: ddays.find(d=>d.id===Number(e.target.value)) || null})} style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '0.5px solid #E8E0D4', fontSize: '12px', color: '#4A3728', outline: 'none' }}>
+                    <option value="">없음</option>
+                    {ddays.map(d => <option key={d.id} value={d.id}>{d.title}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                    <label style={{ color: '#6B5B45' }}>공부시간</label>
+                    <label style={{ color: '#C4B8A8', display: 'flex', alignItems: 'center', gap: '2px', cursor: 'pointer' }}><input type="checkbox" checked={exportData.showTime} onChange={(e)=>setExportData({...exportData, showTime: e.target.checked})} style={{ width: '12px', height: '12px' }} /></label>
+                  </div>
+                  {exportData.showTime && <input value={exportData.studyTime} onChange={(e)=>setExportData({...exportData, studyTime: e.target.value})} style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '0.5px solid #E8E0D4', fontSize: '12px', color: '#4A3728', outline: 'none', boxSizing: 'border-box' }} />}
+                </div>
+              </div>
+              <div style={{ marginTop: '8px', fontSize: '12px' }}>
+                <label style={{ color: '#6B5B45', display: 'block', marginBottom: '4px' }}>명언</label>
+                <input value={exportData.quote} onChange={(e)=>setExportData({...exportData, quote: e.target.value})} style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '0.5px solid #E8E0D4', fontSize: '12px', color: '#4A3728', outline: 'none', boxSizing: 'border-box' }} />
+              </div>
+              <div style={{ marginTop: '8px', fontSize: '12px' }}>
+                <label style={{ color: '#6B5B45', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                  <input type="checkbox" checked={exportData.showFeedback} onChange={(e)=>setExportData({...exportData, showFeedback: e.target.checked})} style={{ width: '12px', height: '12px' }} /> 오늘의 피드백 표시
                 </label>
               </div>
-              {exportData.showTime && (
-                <input value={exportData.studyTime} onChange={(e) => setExportData({ ...exportData, studyTime: e.target.value })} placeholder="예: 3시간 30분" style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '13px', color: '#4A3728', outline: 'none', boxSizing: 'border-box' }} />
-              )}
             </div>
 
-            {/* 미리보기 정보 */}
-            <div style={{ background: '#fff', borderRadius: '10px', border: '0.5px solid #E8E0D4', padding: '12px', marginBottom: '16px', fontSize: '12px', color: '#9A8A78' }}>
-              <div>날짜: {new Date(selectedDate + 'T00:00:00').toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })}</div>
-              <div>할일: {goals.length}개 (완료 {goals.filter(g => g.done).length}개)</div>
-              {feedback && <div>피드백: {feedback.slice(0, 30)}{feedback.length > 30 ? '...' : ''}</div>}
-              {exportData.selectedDday && <div>D-day: {exportData.selectedDday.title}</div>}
+            {/* 미리보기 카드 */}
+            <div id="card-preview" style={{ background: '#3A2E22', borderRadius: '16px', padding: '20px', fontFamily: 'sans-serif' }}>
+              <div style={{ background: '#FAF7F2', borderRadius: '12px', overflow: 'hidden' }}>
+                {/* 헤더 */}
+                <div style={{ padding: '16px 20px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ fontSize: '14px', color: '#4A3728' }}>{dateStr}</div>
+                  <div style={{ fontSize: '13px', color: '#C9A882', fontWeight: '600' }}>🔥 연속 출석</div>
+                </div>
+
+                {/* 명언 + 통계 */}
+                <div style={{ padding: '0 20px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                  <div>
+                    <div style={{ fontSize: '11px', color: '#9A8A78', marginBottom: '4px' }}>오늘도 공들여</div>
+                    <div style={{ fontSize: '18px', fontWeight: '600', color: '#4A3728', lineHeight: '1.4', maxWidth: '200px' }}>{exportData.quote}</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {exportData.showTime && exportData.studyTime && (
+                      <div style={{ background: '#fff', border: '0.5px solid #E8E0D4', borderRadius: '8px', padding: '6px 10px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '9px', color: '#9A8A78' }}>공부 시간</div>
+                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#4A3728' }}>{exportData.studyTime}</div>
+                      </div>
+                    )}
+                    <div style={{ background: '#fff', border: '0.5px solid #E8E0D4', borderRadius: '8px', padding: '6px 10px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '9px', color: '#9A8A78' }}>달성률</div>
+                      <div style={{ fontSize: '14px', fontWeight: '600', color: '#4A3728' }}>{pct}%</div>
+                    </div>
+                    {exportData.selectedDday && (
+                      <div style={{ background: '#4A3728', borderRadius: '8px', padding: '6px 10px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '9px', color: '#C9A882' }}>D-DAY</div>
+                        <div style={{ fontSize: '16px', fontWeight: '700', color: '#fff' }}>{getDdayText(exportData.selectedDday)}</div>
+                        <div style={{ fontSize: '8px', color: '#C9A882' }}>{exportData.selectedDday.title}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 과목별 체크리스트 */}
+                <div style={{ padding: '0 20px 16px' }}>
+                  {Object.entries(grouped).map(([name, { goals: gList, color }]) => {
+                    const done = gList.filter(g => g.done).length
+                    return (
+                      <div key={name} style={{ marginBottom: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #E8E0D4', marginBottom: '6px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: color, display: 'inline-block' }} />
+                            <span style={{ fontSize: '13px', fontWeight: '600', color: '#4A3728' }}>{name}</span>
+                          </div>
+                          <span style={{ fontSize: '12px', color: '#9A8A78' }}>{done}/{gList.length}</span>
+                        </div>
+                        {gList.map(g => (
+                          <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '3px 0', fontSize: '12px' }}>
+                            <span style={{ width: '16px', height: '16px', borderRadius: '4px', background: g.done ? '#C9A882' : '#fff', border: g.done ? 'none' : '1px solid #D4C8B8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#fff', flexShrink: 0 }}>
+                              {g.done && '✓'}
+                            </span>
+                            <span style={{ color: g.done ? '#C4B8A8' : '#4A3728', textDecoration: g.done ? 'line-through' : 'none', flex: 1 }}>{g.text}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* 피드백 */}
+                {exportData.showFeedback && feedback && (
+                  <div style={{ padding: '12px 20px', borderTop: '0.5px solid #E8E0D4' }}>
+                    <div style={{ fontSize: '11px', color: '#9A8A78', marginBottom: '4px' }}>오늘의 한마디</div>
+                    <div style={{ fontSize: '12px', color: '#4A3728', lineHeight: '1.6', fontStyle: 'italic' }}>"{feedback}"</div>
+                  </div>
+                )}
+
+                {/* 하단 */}
+                <div style={{ padding: '8px 20px 12px', textAlign: 'right' }}>
+                  <span style={{ fontSize: '13px', fontWeight: '600', color: '#C9A882' }}>공들여</span>
+                </div>
+              </div>
             </div>
 
             {/* 버튼 */}
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button onClick={() => { generateCard(); setShowExport(false) }} style={{ flex: 1, background: '#C9A882', color: '#fff', border: 'none', borderRadius: '20px', padding: '10px', fontSize: '14px', cursor: 'pointer' }}>
-                이미지 저장
-              </button>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+              <button onClick={downloadCard} style={{ flex: 1, background: '#C9A882', color: '#fff', border: 'none', borderRadius: '20px', padding: '12px', fontSize: '14px', cursor: 'pointer' }}>이미지 저장</button>
               <button onClick={() => {
-                generateCard()
                 setShowExport(false)
-                const dateStr = new Date(selectedDate + 'T00:00:00').toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
-                const text = `${dateStr} 공부 인증! ${goals.filter(g=>g.done).length}/${goals.length} 완료`
+                const text = `${dateObj.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })} 공부 인증! ${doneCount}/${goals.length} 완료`
                 router.push(`/community?post=${encodeURIComponent(text)}`)
-              }} style={{ flex: 1, background: '#6B5B45', color: '#fff', border: 'none', borderRadius: '20px', padding: '10px', fontSize: '14px', cursor: 'pointer' }}>
-                인증글 올리기
-              </button>
+              }} style={{ flex: 1, background: '#6B5B45', color: '#fff', border: 'none', borderRadius: '20px', padding: '12px', fontSize: '14px', cursor: 'pointer' }}>인증글 올리기</button>
             </div>
           </div>
         </div>
-      )}
+        )
+      })()}
     </main>
   )
 }
