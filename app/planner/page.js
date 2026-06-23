@@ -140,9 +140,14 @@ export default function Planner() {
     setGoals(goals.filter(g => g.id !== id))
   }
 
+  const updateGoalSubject = async (goalId, subjectId) => {
+    await supabase.from('goals').update({ subject_id: subjectId || null }).eq('id', goalId)
+    setGoals(goals.map(g => g.id === goalId ? { ...g, subject_id: subjectId || null } : g))
+  }
+
   const saveFeedback = async () => {
     if (!user) return
-    await supabase.from('daily_feedback').upsert({ user_id: user.id, date: selectedDate, feedback })
+    await supabase.from('daily_feedback').upsert({ user_id: user.id, date: selectedDate, feedback }, { onConflict: 'user_id,date' })
     setSavedFeedback(true)
     setTimeout(() => setSavedFeedback(false), 2000)
   }
@@ -293,29 +298,35 @@ export default function Planner() {
         {/* 목표 */}
         <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1.25rem', marginBottom: '16px' }}>
           {goals.filter(g => !selectedSubject || g.subject_id === selectedSubject).length === 0 && <p style={{ fontSize: '14px', color: '#C4B8A8', textAlign: 'center', padding: '1rem 0' }}>목표를 추가해보세요!</p>}
-          {goals.filter(g => !selectedSubject || g.subject_id === selectedSubject).map(goal => (
-            <div key={goal.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: '0.5px solid #F0EAE0' }}>
+          {goals.filter(g => !selectedSubject || g.subject_id === selectedSubject).map(goal => {
+            const sub = subjects.find(s => s.id === goal.subject_id)
+            return (
+            <div key={goal.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 0', borderBottom: '0.5px solid #F0EAE0' }}>
+              {/* 분류 태그 (앞쪽, 클릭하면 변경) */}
+              <select
+                value={goal.subject_id || ''}
+                onChange={(e) => updateGoalSubject(goal.id, e.target.value ? Number(e.target.value) : null)}
+                style={{ width: '54px', padding: '2px', borderRadius: '6px', border: `1px solid ${sub?.color || '#E8E0D4'}`, fontSize: '10px', color: sub?.color || '#9A8A78', outline: 'none', background: '#fff', cursor: 'pointer', flexShrink: 0 }}
+              >
+                <option value="">미분류</option>
+                {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
               <div onClick={() => toggleGoal(goal)} style={{ width: '20px', height: '20px', borderRadius: '6px', border: goal.done ? 'none' : '0.5px solid #D4C8B8', background: goal.done ? '#C9A882' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
                 {goal.done && <span style={{ color: '#fff', fontSize: '12px' }}>✓</span>}
               </div>
-              <div style={{ flex: 1 }}>
-                <span style={{ fontSize: '14px', color: goal.done ? '#C4B8A8' : '#4A3728', textDecoration: goal.done ? 'line-through' : 'none' }}>{goal.text}</span>
-                {goal.subject_id && (() => { const s = subjects.find(s => s.id === goal.subject_id); return s ? <span style={{ fontSize: '10px', color: s.color, marginLeft: '6px', border: `0.5px solid ${s.color}`, borderRadius: '6px', padding: '1px 5px' }}>{s.name}</span> : null })()}
-              </div>
+              <span style={{ flex: 1, fontSize: '14px', color: goal.done ? '#C4B8A8' : '#4A3728', textDecoration: goal.done ? 'line-through' : 'none' }}>{goal.text}</span>
               <span onClick={() => deleteGoal(goal.id)} style={{ fontSize: '16px', color: '#D4C8B8', cursor: 'pointer' }}>×</span>
             </div>
-          ))}
+          )})}
         </div>
 
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-          {subjects.length > 0 && (
-            <select value={selectedSubject || ''} onChange={(e) => setSelectedSubject(e.target.value ? Number(e.target.value) : null)} style={{ padding: '10px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '13px', color: '#4A3728', outline: 'none', background: '#fff' }}>
-              <option value="">분류 없음</option>
-              {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
-          )}
-          <input value={newGoal} onChange={(e) => setNewGoal(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addGoal()} placeholder="새 목표 추가..." style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '14px', outline: 'none', color: '#4A3728', background: '#fff' }} />
-          <button onClick={addGoal} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px 20px', fontSize: '14px', cursor: 'pointer' }}>추가</button>
+        {/* 할일 추가 (선택된 탭의 과목으로 자동 분류) */}
+        <div style={{ marginBottom: '16px' }}>
+          {selectedSubject && (() => { const s = subjects.find(s => s.id === selectedSubject); return s ? <div style={{ fontSize: '11px', color: s.color, marginBottom: '4px' }}>▸ {s.name}에 추가됩니다</div> : null })()}
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <input value={newGoal} onChange={(e) => setNewGoal(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addGoal()} placeholder="새 목표 추가..." style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '14px', outline: 'none', color: '#4A3728', background: '#fff' }} />
+            <button onClick={addGoal} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px 20px', fontSize: '14px', cursor: 'pointer' }}>추가</button>
+          </div>
         </div>
 
         {/* 피드백 (#11 저장 버튼 안에) */}
