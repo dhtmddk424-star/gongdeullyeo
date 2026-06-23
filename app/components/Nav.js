@@ -9,15 +9,17 @@ export default function Nav() {
   const [user, setUser] = useState(null)
   const [nickname, setNickname] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
     const load = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
       if (user) {
-        const { data } = await supabase.from('profiles').select('nickname, avatar_url').eq('id', user.id).single()
+        const { data } = await supabase.from('profiles').select('nickname, avatar_url, role').eq('id', user.id).single()
         if (data?.nickname) setNickname(data.nickname)
         if (data?.avatar_url) setAvatarUrl(data.avatar_url)
+        if (data?.role === 'admin') setIsAdmin(true)
       }
     }
     load()
@@ -51,6 +53,7 @@ export default function Nav() {
         ))}
         {user ? (
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            {isAdmin && <span style={{ fontSize: '12px', color: '#C9A882', cursor: 'pointer', border: '0.5px solid #C9A882', borderRadius: '10px', padding: '3px 8px' }} onClick={() => router.push('/admin')}>관리</span>}
             <span style={{ fontSize: '13px', color: '#6B5B45' }}>{nickname || '프로필'}</span>
             <div
               onClick={() => router.push('/profile')}
