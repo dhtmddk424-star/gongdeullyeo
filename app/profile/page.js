@@ -12,6 +12,7 @@ export default function Profile() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [plan, setPlan] = useState('free')
   const fileRef = useRef()
 
   useEffect(() => {
@@ -22,6 +23,8 @@ export default function Profile() {
       const { data } = await supabase.from('profiles').select('nickname, avatar_url').eq('id', user.id).single()
       if (data?.nickname) setNickname(data.nickname)
       if (data?.avatar_url) setAvatarUrl(data.avatar_url)
+      const { data: sub } = await supabase.from('subscriptions').select('plan, expires_at').eq('user_id', user.id).single()
+      if (sub && sub.plan !== 'free' && (!sub.expires_at || new Date(sub.expires_at) > new Date())) setPlan(sub.plan)
     }
     load()
   }, [router])
@@ -92,6 +95,15 @@ export default function Profile() {
           <button onClick={save} disabled={saving} style={{ width: '100%', background: '#C9A882', color: '#fff', border: 'none', borderRadius: '24px', padding: '12px', fontSize: '15px', cursor: 'pointer' }}>
             {saving ? '저장 중...' : '저장하기'}
           </button>
+        </div>
+
+        {/* 구독 상태 */}
+        <div onClick={() => router.push('/subscribe')} style={{ marginTop: '16px', background: plan === 'premium' ? 'linear-gradient(135deg, #FAF0E4, #FFF8F0)' : '#fff', borderRadius: '12px', border: plan === 'premium' ? '1px solid #C9A882' : '0.5px solid #E8E0D4', padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+          <div>
+            <div style={{ fontSize: '13px', color: '#6B5B45', fontWeight: '500' }}>{plan === 'premium' ? '프리미엄 구독 중' : '무료 플랜'}</div>
+            <div style={{ fontSize: '11px', color: '#9A8A78', marginTop: '2px' }}>{plan === 'premium' ? 'AI 학습 도우미 · AI 리포트 이용 가능' : 'AI 기능을 사용하려면 구독하세요'}</div>
+          </div>
+          <span style={{ fontSize: '12px', color: '#C9A882', fontWeight: '500' }}>{plan === 'premium' ? '관리' : '업그레이드'} →</span>
         </div>
 
         <div style={{ marginTop: '16px', textAlign: 'center', display: 'flex', gap: '16px', justifyContent: 'center' }}>
