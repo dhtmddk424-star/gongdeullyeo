@@ -18,6 +18,12 @@ export default function Login() {
     setMessage('')
 
     if (isSignUp) {
+      const { data: exists } = await supabase.rpc('check_email_exists', { check_email: email })
+      if (exists) {
+        setMessage('이미 가입된 이메일이에요. 로그인해주세요!')
+        setLoading(false)
+        return
+      }
       const { error } = await supabase.auth.signUp({ email, password })
       if (error) {
         setMessage(error.message)
