@@ -5,10 +5,29 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 export async function POST(req) {
   try {
-    const { text, fileType } = await req.json()
+    const formData = await req.formData()
+    let text = formData.get('text') || ''
+    const file = formData.get('file')
 
-    if (!text || !process.env.ANTHROPIC_API_KEY) {
+    if (!process.env.ANTHROPIC_API_KEY) {
       return NextResponse.json({ error: 'API 키가 설정되지 않았습니다.' }, { status: 400 })
+    }
+
+    if (file && file.size > 0) {
+      const bytes = await file.arrayBuffer()
+      const buffer = Buffer.from(bytes)
+
+      if (file.name.endsWith('.pdf')) {
+        const pdfParse = (await import('pdf-parse/lib/pdf-parse.js')).default
+        const pdfData = await pdfParse(buffer)
+        text = pdfData.text
+      } else {
+        text = buffer.toString('utf-8')
+      }
+    }
+
+    if (!text.trim()) {
+      return NextResponse.json({ error: '내용이 비어있습니다.' }, { status: 400 })
     }
 
     const message = await client.messages.create({

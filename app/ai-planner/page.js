@@ -31,35 +31,21 @@ export default function AiPlanner() {
     load()
   }, [router])
 
-  const readFileAsText = (file) => {
-    return new Promise((resolve) => {
-      const reader = new FileReader()
-      reader.onload = (e) => resolve(e.target.result)
-      reader.readAsText(file)
-    })
-  }
-
   const handleParse = async () => {
-    let text = textInput.trim()
-    if (!text && file) {
-      if (file.type.startsWith('text/') || file.name.endsWith('.txt')) {
-        text = await readFileAsText(file)
-      } else {
-        setError('텍스트 파일(.txt)이나 직접 입력을 사용해주세요. PDF/이미지는 텍스트를 복사해서 붙여넣어 주세요.')
-        return
-      }
-    }
-    if (!text) { setError('내용을 입력해주세요.'); return }
+    if (!textInput.trim() && !file) { setError('내용을 입력하거나 파일을 업로드해주세요.'); return }
 
     setParsing(true)
     setError('')
     setResult(null)
 
     try {
+      const formData = new FormData()
+      formData.append('text', textInput.trim())
+      if (file) formData.append('file', file)
+
       const res = await fetch('/api/ai-parse', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text })
+        body: formData
       })
       const data = await res.json()
 
@@ -144,7 +130,7 @@ export default function AiPlanner() {
               <button onClick={() => fileRef.current.click()} style={{ background: 'transparent', color: '#9A8A78', border: '0.5px solid #D4C8B8', borderRadius: '16px', padding: '6px 14px', fontSize: '12px', cursor: 'pointer' }}>
                 {file ? `📎 ${file.name}` : '📎 파일 첨부'}
               </button>
-              <input ref={fileRef} type="file" accept=".txt" onChange={(e) => setFile(e.target.files[0])} style={{ display: 'none' }} />
+              <input ref={fileRef} type="file" accept=".txt,.pdf" onChange={(e) => setFile(e.target.files[0])} style={{ display: 'none' }} />
               {file && <span onClick={() => setFile(null)} style={{ fontSize: '12px', color: '#C4B8A8', cursor: 'pointer' }}>×</span>}
             </div>
             <button onClick={handleParse} disabled={parsing || (!textInput.trim() && !file)} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '20px', padding: '10px 24px', fontSize: '14px', cursor: 'pointer', opacity: (parsing || (!textInput.trim() && !file)) ? 0.5 : 1 }}>
