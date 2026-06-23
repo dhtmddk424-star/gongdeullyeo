@@ -63,12 +63,18 @@ export default function Nav() {
                 cursor: 'pointer', border: '1.5px solid #E8E0D4',
                 overflow: 'hidden',
               }}
-            >
-            </div>
-            <button onClick={async () => { await supabase.auth.signOut(); router.push('/') }} style={{ background: 'transparent', color: '#9A8A78', border: '0.5px solid #D4C8B8', borderRadius: '20px', padding: '5px 14px', fontSize: '12px', cursor: 'pointer' }}>로그아웃</button>
+            />
           </div>
         ) : (
-          <button onClick={() => router.push('/login')} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '20px', padding: '6px 16px', fontSize: '13px', cursor: 'pointer' }}>로그인</button>
+          <div
+            onClick={() => router.push('/login')}
+            style={{
+              width: '30px', height: '30px', borderRadius: '50%',
+              background: 'url(/default-avatar.png) center/cover',
+              cursor: 'pointer', border: '1.5px solid #E8E0D4',
+              overflow: 'hidden',
+            }}
+          />
         )}
       </div>
     </nav>
