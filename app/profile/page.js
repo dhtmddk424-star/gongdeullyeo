@@ -95,9 +95,9 @@ export default function Profile() {
         </div>
 
         <div style={{ marginTop: '16px', textAlign: 'center', display: 'flex', gap: '16px', justifyContent: 'center' }}>
-          <span onClick={() => router.push('/contact')} style={{ fontSize: '13px', color: '#9A8A78', cursor: 'pointer' }}>문의하기</span>
+          <span onClick={async () => { await supabase.auth.signOut(); localStorage.removeItem('auto-login'); router.push('/') }} style={{ fontSize: '13px', color: '#9A8A78', cursor: 'pointer' }}>로그아웃</span>
           <span style={{ color: '#E8E0D4' }}>·</span>
-          <span onClick={async () => { await supabase.auth.signOut(); localStorage.removeItem('auto-login'); router.push('/') }} style={{ fontSize: '13px', color: '#C4B8A8', cursor: 'pointer' }}>로그아웃</span>
+          <span onClick={() => router.push('/contact')} style={{ fontSize: '13px', color: '#9A8A78', cursor: 'pointer' }}>문의하기</span>
         </div>
       </section>
     </main>

@@ -236,9 +236,10 @@ function Community() {
             {announcements.map(ann => {
               const isExpanded = expandedAnns.has(ann.id)
               const isEditing = editingAnn?.id === ann.id
-              const lines = ann.content.split('\n')
-              const isLong = lines.length > 3 || ann.content.length > 150
-              const preview = lines.slice(0, 3).join('\n').slice(0, 150)
+              const lines = ann.content.split('\n').filter((l, i) => i === 0 || l.trim() !== '' || i > 2)
+              const previewLines = ann.content.split('\n').slice(0, 2).filter(l => l.trim() !== '')
+              const isLong = ann.content.split('\n').length > 2 || ann.content.length > 100
+              const preview = previewLines.join('\n').slice(0, 100)
               return (
               <div key={ann.id} style={{ background: '#FFF8EE', borderRadius: '12px', border: '1px solid #E8D9C8', padding: '1rem 1.25rem', marginBottom: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
@@ -346,16 +347,21 @@ function Community() {
                   <span style={{ fontSize: '13px', color: '#6B5B45', fontWeight: '500' }}>{nicknames[post.user_id] || '공부중'}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {post.pinned && <span style={{ fontSize: '10px', color: '#C9A882', border: '0.5px solid #C9A882', borderRadius: '6px', padding: '1px 5px' }}>고정</span>}
+                  {post.pinned && <span style={{ fontSize: '11px' }}>📌</span>}
                   <span style={{ fontSize: '12px', color: '#C4B8A8' }} title={new Date(post.created_at).toLocaleString('ko-KR')}>{timeAgo(post.created_at)}</span>
                   {(user?.id === post.user_id || isAdmin) && (
                     <div style={{ position: 'relative' }}>
                       <span onClick={() => setMenuOpen(menuOpen === post.id ? null : post.id)} style={{ fontSize: '16px', color: '#C4B8A8', cursor: 'pointer', padding: '0 4px' }}>⋮</span>
                       {menuOpen === post.id && (
                         <div style={{ position: 'absolute', right: 0, top: '24px', background: '#fff', borderRadius: '8px', border: '0.5px solid #E8E0D4', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', zIndex: 10, minWidth: '100px', overflow: 'hidden' }}>
+                          {user?.id === post.user_id && (
+                            <div onClick={() => { setMenuOpen(null); const newContent = prompt('수정할 내용:', post.content); if (newContent !== null) { supabase.from('posts').update({ content: newContent }).eq('id', post.id).then(() => { setPosts(posts.map(p => p.id === post.id ? { ...p, content: newContent } : p)) }) } }} style={{ padding: '10px 14px', fontSize: '13px', color: '#6B5B45', cursor: 'pointer', borderBottom: '0.5px solid #F0EAE0' }}>
+                              수정
+                            </div>
+                          )}
                           {isAdmin && (
                             <div onClick={() => { togglePin(post.id, post.pinned); setMenuOpen(null) }} style={{ padding: '10px 14px', fontSize: '13px', color: '#6B5B45', cursor: 'pointer', borderBottom: '0.5px solid #F0EAE0' }}>
-                              {post.pinned ? '고정 해제' : '📌 고정'}
+                              {post.pinned ? '고정 해제' : '고정'}
                             </div>
                           )}
                           <div onClick={() => { deletePost(post.id); setMenuOpen(null) }} style={{ padding: '10px 14px', fontSize: '13px', color: '#C44', cursor: 'pointer' }}>
