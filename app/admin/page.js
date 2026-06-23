@@ -10,6 +10,7 @@ export default function Admin() {
   const [inquiries, setInquiries] = useState([])
   const [users, setUsers] = useState([])
   const [tab, setTab] = useState('inquiries')
+  const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -21,6 +22,7 @@ export default function Admin() {
       setUser(user)
       await fetchInquiries()
       await fetchUsers()
+      await fetchPayments()
       setLoading(false)
     }
     load()
@@ -34,6 +36,11 @@ export default function Admin() {
   const fetchUsers = async () => {
     const { data } = await supabase.rpc('get_users_admin')
     setUsers(data || [])
+  }
+
+  const fetchPayments = async () => {
+    const { data } = await supabase.from('payments').select('*').order('created_at', { ascending: false })
+    setPayments(data || [])
   }
 
   const deleteInquiry = async (id) => {
@@ -52,9 +59,9 @@ export default function Admin() {
         <h1 style={{ fontSize: '22px', fontWeight: '500', color: '#4A3728', marginBottom: '1.5rem' }}>관리자 페이지</h1>
 
         <div style={{ display: 'flex', gap: '8px', marginBottom: '1.5rem' }}>
-          {['inquiries', 'users'].map(t => (
+          {['inquiries', 'users', 'payments'].map(t => (
             <span key={t} onClick={() => setTab(t)} style={{ fontSize: '13px', padding: '6px 16px', borderRadius: '14px', cursor: 'pointer', background: tab === t ? '#C9A882' : '#fff', color: tab === t ? '#fff' : '#9A8A78', border: '0.5px solid #E8E0D4' }}>
-              {t === 'inquiries' ? `문의 (${inquiries.length})` : `회원 (${users.length})`}
+              {t === 'inquiries' ? `문의 (${inquiries.length})` : t === 'users' ? `회원 (${users.length})` : `결제 (${payments.length})`}
             </span>
           ))}
         </div>
@@ -94,6 +101,54 @@ export default function Admin() {
                 <span style={{ fontSize: '11px', color: '#C4B8A8' }}>{new Date(u.created_at).toLocaleDateString('ko-KR')}</span>
               </div>
             ))}
+          </div>
+        )}
+
+        {tab === 'payments' && (
+          <div>
+            {/* 월별 요약 */}
+            {(() => {
+              const monthly = {}
+              payments.forEach(p => {
+                const m = new Date(p.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long' })
+                if (!monthly[m]) monthly[m] = { total: 0, count: 0 }
+                monthly[m].total += p.amount
+                monthly[m].count++
+              })
+              return Object.entries(monthly).length > 0 ? (
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+                  {Object.entries(monthly).map(([m, d]) => (
+                    <div key={m} style={{ background: '#fff', borderRadius: '10px', border: '0.5px solid #E8E0D4', padding: '10px 14px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '12px', color: '#9A8A78' }}>{m}</div>
+                      <div style={{ fontSize: '18px', fontWeight: '600', color: '#4A3728' }}>{d.total.toLocaleString()}원</div>
+                      <div style={{ fontSize: '11px', color: '#C4B8A8' }}>{d.count}건</div>
+                    </div>
+                  ))}
+                </div>
+              ) : null
+            })()}
+
+            {payments.length === 0 && <p style={{ fontSize: '14px', color: '#C4B8A8', textAlign: 'center', padding: '2rem 0' }}>결제 내역이 없어요</p>}
+
+            {payments.length > 0 && (
+              <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', overflow: 'hidden' }}>
+                {payments.map((p, i) => {
+                  const u = users.find(u => u.id === p.user_id)
+                  return (
+                    <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: i < payments.length - 1 ? '0.5px solid #F0EAE0' : 'none' }}>
+                      <div>
+                        <span style={{ fontSize: '14px', color: '#4A3728' }}>{u?.email || p.user_id.slice(0,8)}</span>
+                        <span style={{ fontSize: '11px', color: '#9A8A78', marginLeft: '8px' }}>{p.plan}</span>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '14px', fontWeight: '500', color: '#C9A882' }}>{p.amount.toLocaleString()}원</div>
+                        <div style={{ fontSize: '10px', color: '#C4B8A8' }}>{formatDate(p.created_at)}</div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
         )}
       </section>

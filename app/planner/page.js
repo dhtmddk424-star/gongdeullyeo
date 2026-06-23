@@ -596,7 +596,7 @@ export default function Planner() {
                 {/* 피드백 */}
                 {exportData.showFeedback && feedback && (
                   <div style={{ padding: '10px 20px', borderTop: '0.5px solid #E8E0D4' }}>
-                    <div style={{ fontSize: '11px', color: '#9A8A78', marginBottom: '3px' }}>오늘의 한마디</div>
+                    <div style={{ fontSize: '11px', color: '#9A8A78', marginBottom: '3px' }}>오늘의 피드백</div>
                     <div style={{ fontSize: '12px', color: '#4A3728', lineHeight: '1.6', fontStyle: 'italic' }}>"{feedback}"</div>
                   </div>
                 )}
