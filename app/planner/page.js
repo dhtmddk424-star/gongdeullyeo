@@ -425,13 +425,19 @@ export default function Planner() {
           grouped[key].goals.push(g)
         })
         const hours = Array.from({ length: 19 }, (_, i) => (i + 7) % 24)
-        const sessionsByHour = {}
+        const sessionSlots = {}
         sessions.forEach(s => {
-          const h = new Date(s.created_at).getHours()
+          const startH = new Date(s.created_at).getHours()
+          const startM = new Date(s.created_at).getMinutes()
           const dur = s.duration_minutes
           const sub = subjects.find(sb => sb.name === s.subject)
-          for (let i = 0; i < Math.ceil(dur / 60); i++) {
-            sessionsByHour[h + i] = { subject: s.subject, color: sub?.color || '#C9A882' }
+          const color = sub?.color || '#C9A882'
+          for (let m = 0; m < dur; m += 5) {
+            const totalMin = startM + m
+            const h = (startH + Math.floor(totalMin / 60)) % 24
+            const slot = Math.floor((totalMin % 60) / 5)
+            if (!sessionSlots[h]) sessionSlots[h] = {}
+            sessionSlots[h][slot] = { subject: s.subject, color }
           }
         })
 
@@ -536,7 +542,7 @@ export default function Planner() {
                     /* 디자인2: TASKS + TIMETABLE 2열 */
                     <div style={{ display: 'flex', height: '100%' }}>
                       {/* 왼쪽: TASKS + 피드백 */}
-                      <div style={{ flex: 1, padding: '12px 14px', borderRight: '1px solid #E8E0D4', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                      <div style={{ flex: 1, padding: '12px 14px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                         <div style={{ fontSize: '10px', fontWeight: '700', color: '#9A8A78', marginBottom: '8px', letterSpacing: '2px' }}>TASKS</div>
                         <div style={{ flex: 1, overflow: 'hidden' }}>
                           {Object.entries(grouped).map(([name, { goals: gList, color }]) => (
@@ -564,17 +570,20 @@ export default function Planner() {
                           </div>
                         )}
                       </div>
-                      {/* 오른쪽: TIMETABLE 7~1시 */}
-                      <div style={{ width: '105px', padding: '12px 10px', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+                      {/* 오른쪽: TIMETABLE 7~1시 (5분 단위 12칸) */}
+                      <div style={{ width: '115px', padding: '12px 10px', flexShrink: 0, display: 'flex', flexDirection: 'column', borderLeft: '1px solid #E8E0D4' }}>
                         <div style={{ fontSize: '10px', fontWeight: '700', color: '#9A8A78', marginBottom: '6px', letterSpacing: '2px' }}>TIME TABLE</div>
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                         {Array.from({ length: 19 }, (_, i) => (i + 7) % 24).map(h => {
-                          const s = sessionsByHour[h]
+                          const slots = sessionSlots[h] || {}
                           return (
-                            <div key={h} style={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1, fontSize: '9px' }}>
-                              <span style={{ width: '16px', color: '#C4B8A8', textAlign: 'right', fontSize: '8px' }}>{String(h).padStart(2, '0')}</span>
-                              <div style={{ flex: 1, height: '100%', borderRadius: '2px', background: s ? s.color : '#F0EAE0', display: 'flex', alignItems: 'center', paddingLeft: '3px', marginBottom: '1px' }}>
-                                {s && <span style={{ fontSize: '7px', color: '#fff', fontWeight: '500' }}>{s.subject}</span>}
+                            <div key={h} style={{ display: 'flex', alignItems: 'center', gap: '3px', flex: 1 }}>
+                              <span style={{ width: '14px', color: '#C4B8A8', textAlign: 'right', fontSize: '8px', flexShrink: 0 }}>{String(h).padStart(2, '0')}</span>
+                              <div style={{ flex: 1, display: 'flex', gap: '0.5px', height: '100%' }}>
+                                {Array.from({ length: 12 }, (_, s) => {
+                                  const slot = slots[s]
+                                  return <div key={s} style={{ flex: 1, borderRadius: '1px', background: slot ? slot.color : '#F0EAE0', minHeight: '8px' }} />
+                                })}
                               </div>
                             </div>
                           )

@@ -22,6 +22,13 @@ function Community() {
   const [uploading, setUploading] = useState(false)
   const [nicknames, setNicknames] = useState({})
   const [tagInput, setTagInput] = useState('')
+  const [announcements, setAnnouncements] = useState([])
+  const [showAnnForm, setShowAnnForm] = useState(false)
+  const [annContent, setAnnContent] = useState('')
+  const [annImage, setAnnImage] = useState(null)
+  const [annImagePreview, setAnnImagePreview] = useState(null)
+  const [editingAnn, setEditingAnn] = useState(null)
+  const annFileRef = useRef()
   const [tags, setTags] = useState([])
   const [filterTag, setFilterTag] = useState('')
   const [likes, setLikes] = useState({})
@@ -41,12 +48,46 @@ function Community() {
       }
       const postParam = searchParams.get('post')
       if (postParam) setNewPost(postParam)
+      fetchAnnouncements()
       fetchPosts()
     }
     getUser()
   }, [])
 
   useEffect(() => { fetchPosts() }, [filterTag])
+
+  const fetchAnnouncements = async () => {
+    const { data } = await supabase.from('announcements').select('*').order('created_at', { ascending: false })
+    setAnnouncements(data || [])
+  }
+
+  const saveAnnouncement = async () => {
+    if (!annContent.trim() || !user) return
+    let image_url = null
+    if (annImage) {
+      const ext = annImage.name.split('.').pop()
+      const fileName = `ann-${Date.now()}.${ext}`
+      await supabase.storage.from('posts').upload(fileName, annImage)
+      const { data } = supabase.storage.from('posts').getPublicUrl(fileName)
+      image_url = data.publicUrl
+    }
+    if (editingAnn) {
+      await supabase.from('announcements').update({ content: annContent, ...(image_url ? { image_url } : {}), updated_at: new Date().toISOString() }).eq('id', editingAnn.id)
+    } else {
+      await supabase.from('announcements').insert({ user_id: user.id, content: annContent, image_url })
+    }
+    setAnnContent(''); setAnnImage(null); setAnnImagePreview(null); setShowAnnForm(false); setEditingAnn(null)
+    fetchAnnouncements()
+  }
+
+  const deleteAnnouncement = async (id) => {
+    await supabase.from('announcements').delete().eq('id', id)
+    setAnnouncements(announcements.filter(a => a.id !== id))
+  }
+
+  const startEditAnn = (ann) => {
+    setEditingAnn(ann); setAnnContent(ann.content); setAnnImagePreview(ann.image_url); setShowAnnForm(true)
+  }
 
   const addTag = () => {
     const t = tagInput.trim().replace(/^#/, '')
@@ -190,6 +231,57 @@ function Community() {
           ))}
         </div>
 
+        {/* 공지글 */}
+        {announcements.length > 0 && (
+          <div style={{ marginBottom: '16px' }}>
+            {announcements.map(ann => (
+              <div key={ann.id} style={{ background: '#FFF8EE', borderRadius: '12px', border: '1px solid #E8D9C8', padding: '1rem 1.25rem', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '11px', background: '#C9A882', color: '#fff', padding: '2px 8px', borderRadius: '8px', fontWeight: '600' }}>공지</span>
+                    <span style={{ fontSize: '11px', color: '#C4B8A8' }}>{new Date(ann.updated_at || ann.created_at).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                  </div>
+                  {isAdmin && (
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <span onClick={() => startEditAnn(ann)} style={{ fontSize: '12px', color: '#C9A882', cursor: 'pointer' }}>수정</span>
+                      <span onClick={() => deleteAnnouncement(ann.id)} style={{ fontSize: '14px', color: '#D4C8B8', cursor: 'pointer' }}>×</span>
+                    </div>
+                  )}
+                </div>
+                <p style={{ fontSize: '14px', color: '#4A3728', lineHeight: '1.6', margin: 0, whiteSpace: 'pre-wrap' }}>{ann.content}</p>
+                {ann.image_url && <img src={ann.image_url} alt="공지 이미지" style={{ marginTop: '10px', maxWidth: '100%', borderRadius: '8px', display: 'block' }} />}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 공지 작성 (관리자만) */}
+        {isAdmin && (
+          <div style={{ marginBottom: '12px' }}>
+            {!showAnnForm ? (
+              <button onClick={() => setShowAnnForm(true)} style={{ background: 'transparent', color: '#C9A882', border: '1px dashed #C9A882', borderRadius: '10px', padding: '8px 16px', fontSize: '12px', cursor: 'pointer', width: '100%' }}>+ 공지 작성</button>
+            ) : (
+              <div style={{ background: '#FFF8EE', borderRadius: '12px', border: '1px solid #E8D9C8', padding: '1rem' }}>
+                <textarea value={annContent} onChange={(e) => setAnnContent(e.target.value)} placeholder="공지 내용을 입력하세요" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '14px', outline: 'none', color: '#4A3728', background: '#fff', resize: 'none', height: '80px', boxSizing: 'border-box', fontFamily: 'sans-serif' }} />
+                {annImagePreview && (
+                  <div style={{ position: 'relative', marginTop: '8px', display: 'inline-block' }}>
+                    <img src={annImagePreview} alt="preview" style={{ maxWidth: '100%', maxHeight: '150px', borderRadius: '8px' }} />
+                    <span onClick={() => { setAnnImage(null); setAnnImagePreview(null) }} style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(0,0,0,0.4)', color: '#fff', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px' }}>×</span>
+                  </div>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button onClick={() => annFileRef.current.click()} style={{ background: 'transparent', color: '#9A8A78', border: '0.5px solid #D4C8B8', borderRadius: '16px', padding: '5px 12px', fontSize: '11px', cursor: 'pointer' }}>📷 사진</button>
+                    <input ref={annFileRef} type="file" accept="image/*" onChange={(e) => { const f = e.target.files[0]; if (f) { setAnnImage(f); setAnnImagePreview(URL.createObjectURL(f)) } }} style={{ display: 'none' }} />
+                    <button onClick={() => { setShowAnnForm(false); setAnnContent(''); setAnnImage(null); setAnnImagePreview(null); setEditingAnn(null) }} style={{ background: 'transparent', color: '#C4B8A8', border: 'none', fontSize: '12px', cursor: 'pointer' }}>취소</button>
+                  </div>
+                  <button onClick={saveAnnouncement} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '16px', padding: '6px 16px', fontSize: '12px', cursor: 'pointer' }}>{editingAnn ? '수정' : '공지 등록'}</button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {user ? (
           <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1.25rem', marginBottom: '16px' }}>
             <textarea value={newPost} onChange={(e) => setNewPost(e.target.value)} placeholder="오늘의 공부를 인증해보세요! 예) 토익 RC 파트7 완료 ✍️" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '14px', outline: 'none', color: '#4A3728', background: '#FAF7F2', resize: 'none', height: '80px', boxSizing: 'border-box', fontFamily: 'sans-serif' }} />
@@ -235,7 +327,7 @@ function Community() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   {post.pinned && !isAdmin && <span style={{ fontSize: '11px' }}>📌</span>}
-                  <span style={{ fontSize: '12px', color: '#C4B8A8' }}>{timeAgo(post.created_at)}</span>
+                  <span style={{ fontSize: '12px', color: '#C4B8A8' }} title={new Date(post.created_at).toLocaleString('ko-KR')}>{timeAgo(post.created_at)}</span>
                   {isAdmin && (
                     <span onClick={() => togglePin(post.id, post.pinned)} style={{ fontSize: '12px', cursor: 'pointer', opacity: post.pinned ? 1 : 0.4 }} title={post.pinned ? '고정 해제' : '고정'}>📌</span>
                   )}
