@@ -313,17 +313,18 @@ export default function Planner() {
                 <div key={goal.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', borderBottom: '0.5px solid #F0EAE0' }}>
                   {/* 분류 태그 앞쪽 */}
                   {sub ? (
-                    <span onClick={() => updateGoalSubject(goal.id, null)} style={{ fontSize: '10px', color: sub.color, border: `1px solid ${sub.color}`, borderRadius: '6px', padding: '2px 6px', flexShrink: 0, whiteSpace: 'nowrap', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}>{sub.name}<span style={{ color: '#D4C8B8' }}>×</span></span>
+                    <span onClick={() => setAssigningGoalId(isAssigning ? null : goal.id)} style={{ fontSize: '10px', color: sub.color, border: `1px solid ${sub.color}`, borderRadius: '6px', padding: '2px 6px', flexShrink: 0, whiteSpace: 'nowrap', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px', background: isAssigning ? '#FAF0E4' : 'transparent' }}>
+                      {sub.name}{isAssigning && <span onClick={(e) => { e.stopPropagation(); updateGoalSubject(goal.id, null); setAssigningGoalId(null) }} style={{ color: '#D4C8B8' }}>×</span>}
+                    </span>
                   ) : (
                     <span
                       onClick={() => setAssigningGoalId(isAssigning ? null : goal.id)}
                       style={{ width: '20px', height: '20px', borderRadius: '6px', border: '1px dashed #D4C8B8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, fontSize: '10px', color: '#D4C8B8', background: isAssigning ? '#FAF0E4' : 'transparent' }}
                     >+</span>
                   )}
-                  {/* 분류 할당 중이면 과목 버튼 표시 */}
                   {isAssigning && (
                     <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
-                      {subjects.map(s => (
+                      {subjects.filter(s => s.id !== goal.subject_id).map(s => (
                         <span key={s.id} onClick={() => { updateGoalSubject(goal.id, s.id); setAssigningGoalId(null) }} style={{ fontSize: '10px', color: '#fff', background: s.color, borderRadius: '6px', padding: '2px 6px', cursor: 'pointer' }}>{s.name}</span>
                       ))}
                     </div>
