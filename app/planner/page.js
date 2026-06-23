@@ -495,9 +495,9 @@ export default function Planner() {
             {/* 미리보기 카드 (4:5 비율) */}
             <div id="card-preview" style={{ background: '#3A2E22', borderRadius: '16px', padding: '16px', fontFamily: 'sans-serif', aspectRatio: '4/5' }}>
               <div style={{ background: '#FAF7F2', borderRadius: '12px', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
-                {/* 헤더 바 */}
-                <div style={{ background: '#4A3728', padding: '12px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ color: '#FAF7F2', fontSize: '13px', fontWeight: '500' }}>{dateStr}</div>
+                {/* 헤더 */}
+                <div style={{ padding: '14px 18px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E8E0D4' }}>
+                  <div style={{ color: '#4A3728', fontSize: '13px', fontWeight: '500' }}>{dateStr}</div>
                   {exportData.streakCount > 0 && <div style={{ color: '#C9A882', fontSize: '12px', fontWeight: '600' }}>🔥 {exportData.streakCount}일 연속</div>}
                 </div>
 
@@ -564,20 +564,22 @@ export default function Planner() {
                           </div>
                         )}
                       </div>
-                      {/* 오른쪽: TIMETABLE 7~25(1시) */}
-                      <div style={{ width: '100px', padding: '12px 10px', flexShrink: 0 }}>
-                        <div style={{ fontSize: '10px', fontWeight: '700', color: '#9A8A78', marginBottom: '8px', letterSpacing: '2px' }}>TIME TABLE</div>
+                      {/* 오른쪽: TIMETABLE 7~1시 */}
+                      <div style={{ width: '105px', padding: '12px 10px', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ fontSize: '10px', fontWeight: '700', color: '#9A8A78', marginBottom: '6px', letterSpacing: '2px' }}>TIME TABLE</div>
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                         {Array.from({ length: 19 }, (_, i) => (i + 7) % 24).map(h => {
                           const s = sessionsByHour[h]
                           return (
-                            <div key={h} style={{ display: 'flex', alignItems: 'center', gap: '4px', height: '16px', fontSize: '9px' }}>
+                            <div key={h} style={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1, fontSize: '9px' }}>
                               <span style={{ width: '16px', color: '#C4B8A8', textAlign: 'right', fontSize: '8px' }}>{String(h).padStart(2, '0')}</span>
-                              <div style={{ flex: 1, height: '13px', borderRadius: '2px', background: s ? s.color : '#F0EAE0', display: 'flex', alignItems: 'center', paddingLeft: '3px' }}>
+                              <div style={{ flex: 1, height: '100%', borderRadius: '2px', background: s ? s.color : '#F0EAE0', display: 'flex', alignItems: 'center', paddingLeft: '3px', marginBottom: '1px' }}>
                                 {s && <span style={{ fontSize: '7px', color: '#fff', fontWeight: '500' }}>{s.subject}</span>}
                               </div>
                             </div>
                           )
                         })}
+                        </div>
                       </div>
                     </div>
                   ) : (
@@ -613,7 +615,7 @@ export default function Planner() {
                 </div>
 
                 {/* 하단 */}
-                <div style={{ padding: '8px 18px 10px', borderTop: '0.5px solid #E8E0D4', textAlign: 'right' }}>
+                <div style={{ padding: '6px 18px 10px', textAlign: 'right' }}>
                   <span style={{ fontSize: '12px', fontWeight: '700', color: '#C9A882', letterSpacing: '1px' }}>공들여</span>
                 </div>
               </div>

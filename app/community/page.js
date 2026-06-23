@@ -55,10 +55,10 @@ function Community() {
   }
 
   const fetchPosts = async () => {
-    let query = supabase.from('posts').select('*').order('pinned', { ascending: false }).order('created_at', { ascending: false })
+    let query = supabase.from('posts').select('*').order('created_at', { ascending: false })
     if (filterTag) query = query.contains('tags', [filterTag])
     const { data } = await query
-    const postList = data || []
+    const postList = (data || []).sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0))
     setPosts(postList)
     if (postList.length > 0) {
       const ids = [...new Set(postList.map(p => p.user_id))]
@@ -234,10 +234,10 @@ function Community() {
                   <span style={{ fontSize: '13px', color: '#6B5B45', fontWeight: '500' }}>{nicknames[post.user_id] || '공부중'}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {post.pinned && <span style={{ fontSize: '10px', color: '#C9A882', border: '0.5px solid #C9A882', borderRadius: '6px', padding: '1px 5px' }}>고정</span>}
+                  {post.pinned && !isAdmin && <span style={{ fontSize: '11px' }}>📌</span>}
                   <span style={{ fontSize: '12px', color: '#C4B8A8' }}>{timeAgo(post.created_at)}</span>
                   {isAdmin && (
-                    <span onClick={() => togglePin(post.id, post.pinned)} style={{ fontSize: '12px', color: post.pinned ? '#C9A882' : '#D4C8B8', cursor: 'pointer' }} title={post.pinned ? '고정 해제' : '고정'}>📌</span>
+                    <span onClick={() => togglePin(post.id, post.pinned)} style={{ fontSize: '12px', cursor: 'pointer', opacity: post.pinned ? 1 : 0.4 }} title={post.pinned ? '고정 해제' : '고정'}>📌</span>
                   )}
                   {(user?.id === post.user_id || isAdmin) && (
                     <span onClick={() => deletePost(post.id)} style={{ fontSize: '16px', color: '#D4C8B8', cursor: 'pointer' }}>×</span>
