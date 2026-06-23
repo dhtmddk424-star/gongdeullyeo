@@ -24,7 +24,7 @@ export default function Subscribe() {
   }, [router])
 
   const handleSubscribe = () => {
-    alert('결제 시스템 준비 중입니다! 곧 토스페이먼츠로 연동될 예정이에요.')
+    alert('서비스 준비중입니다.')
   }
 
   if (loading) return <main style={{ minHeight: '100vh', background: '#FAF7F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: '#9A8A78' }}>불러오는 중...</p></main>

@@ -118,8 +118,9 @@ export default function Planner() {
 
   const addSubject = async () => {
     if (!newSubjectName.trim() || !user) return
-    const colors = ['#C9A882', '#8BA88E', '#7B9EBF', '#C4869B', '#B8A06B', '#9B8EC4', '#C47E5A']
-    const color = colors[subjects.length % colors.length]
+    const allColors = ['#C9A882', '#7B9EBF', '#C4869B', '#8BA88E', '#B8A06B', '#9B8EC4', '#C47E5A']
+    const usedColors = new Set(subjects.map(s => s.color))
+    const color = allColors.find(c => !usedColors.has(c)) || allColors[subjects.length % allColors.length]
     const { data } = await supabase.from('subjects').insert({ user_id: user.id, name: newSubjectName.trim(), color, sort_order: subjects.length }).select()
     if (data) setSubjects([...subjects, data[0]])
     setNewSubjectName('')
