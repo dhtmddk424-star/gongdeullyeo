@@ -157,7 +157,7 @@ export default function ExportCard() {
     ctx.fillStyle = '#D4C8B8'
     ctx.font = '20px sans-serif'
     ctx.textAlign = 'center'
-    ctx.fillText('gongdeullyeo.vercel.app', w / 2, h - 80)
+    ctx.fillText('gonglog.vercel.app', w / 2, h - 80)
   }
 
   const download = () => {
