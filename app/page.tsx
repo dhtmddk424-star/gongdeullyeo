@@ -69,6 +69,14 @@ export default function Home() {
         </section>
       )}
 
+      {/* 명언 */}
+      <section style={{ padding: '0 2rem 1.5rem' }}>
+        <div style={{ maxWidth: '480px', margin: '0 auto', background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1.5rem 2rem', textAlign: 'center' }}>
+          <p style={{ fontSize: '15px', color: '#6B5B45', lineHeight: '1.7', margin: '0 0 8px', fontStyle: 'italic' }}>"{quote.text}"</p>
+          <p style={{ fontSize: '12px', color: '#C4B8A8', margin: 0 }}>— {quote.author}</p>
+        </div>
+      </section>
+
       {/* 기능 카드 - 유료 기능 포함 */}
       <section style={{ padding: '0 2rem 2rem' }}>
         <div style={{ maxWidth: '480px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -94,14 +102,6 @@ export default function Home() {
             <div style={{ fontSize: '14px', fontWeight: '500', color: '#4A3728', marginBottom: '4px' }}>AI 학습 리포트</div>
             <div style={{ fontSize: '12px', color: '#9A8A78' }}>맞춤 분석 · 방향 제안</div>
           </div>
-        </div>
-      </section>
-
-      {/* 명언 */}
-      <section style={{ padding: '0 2rem 3rem' }}>
-        <div style={{ maxWidth: '480px', margin: '0 auto', background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1.5rem 2rem', textAlign: 'center' }}>
-          <p style={{ fontSize: '15px', color: '#6B5B45', lineHeight: '1.7', margin: '0 0 8px', fontStyle: 'italic' }}>"{quote.text}"</p>
-          <p style={{ fontSize: '12px', color: '#C4B8A8', margin: 0 }}>— {quote.author}</p>
         </div>
       </section>
 

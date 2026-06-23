@@ -29,7 +29,7 @@ export default function Nav() {
     { path: '/planner', label: '플래너' },
     { path: '/dashboard', label: '대시보드' },
     { path: '/community', label: '커뮤니티' },
-    { path: '/store', label: '자료' },
+    { path: '/store', label: '자료실' },
   ]
 
   return (
