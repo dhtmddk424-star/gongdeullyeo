@@ -22,6 +22,8 @@ export default function Dashboard() {
   const [weekOffset, setWeekOffset] = useState(0)
   const [subjects, setSubjects] = useState([])
   const [sessionDate, setSessionDate] = useState(getToday())
+  const [showNewSubject, setShowNewSubject] = useState(false)
+  const [newSubjectName, setNewSubjectName] = useState('')
   const intervalRef = useRef(null)
 
   useEffect(() => {
@@ -140,8 +142,22 @@ export default function Dashboard() {
     setWeeklyStats(stats)
   }
 
+  const addSubjectFromTimer = async () => {
+    if (!newSubjectName.trim() || !user) return
+    const allColors = ['#C9A882', '#7B9EBF', '#C4869B', '#8BA88E', '#B8A06B', '#9B8EC4', '#C47E5A']
+    const usedColors = new Set(subjects.map(s => s.color))
+    const color = allColors.find(c => !usedColors.has(c)) || allColors[subjects.length % allColors.length]
+    const { data } = await supabase.from('subjects').insert({ user_id: user.id, name: newSubjectName.trim(), color, sort_order: subjects.length }).select()
+    if (data) {
+      setSubjects([...subjects, data[0]])
+      setTimerSubject(data[0].name)
+    }
+    setNewSubjectName('')
+    setShowNewSubject(false)
+  }
+
   const startTimer = () => {
-    if (!timerSubject.trim()) return
+    if (!timerSubject.trim()) setTimerSubject('미분류')
     setTimerRunning(true)
     setTimerSeconds(0)
     intervalRef.current = setInterval(() => setTimerSeconds(s => s + 1), 1000)
@@ -232,17 +248,24 @@ export default function Dashboard() {
 
           {!timerRunning ? (
             <div>
-              {subjects.length > 0 && (
-                <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                  {subjects.map(s => (
-                    <span key={s.id} onClick={() => setTimerSubject(s.name)} style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '12px', cursor: 'pointer', background: timerSubject === s.name ? s.color : '#fff', color: timerSubject === s.name ? '#fff' : s.color, border: `1px solid ${s.color}` }}>{s.name}</span>
-                  ))}
-                </div>
-              )}
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <input placeholder="과목명 직접 입력" value={timerSubject} onChange={(e) => setTimerSubject(e.target.value)} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '14px', outline: 'none', color: '#4A3728' }} />
-                <button onClick={startTimer} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', cursor: 'pointer' }}>시작</button>
+              <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                <span onClick={() => setTimerSubject('')} style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '12px', cursor: 'pointer', background: !timerSubject ? '#4A3728' : '#fff', color: !timerSubject ? '#fff' : '#9A8A78', border: '0.5px solid #E8E0D4' }}>미분류</span>
+                {subjects.map(s => (
+                  <span key={s.id} onClick={() => setTimerSubject(timerSubject === s.name ? '' : s.name)} style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '12px', cursor: 'pointer', background: timerSubject === s.name ? s.color : '#fff', color: timerSubject === s.name ? '#fff' : s.color, border: `1px solid ${s.color}` }}>{s.name}</span>
+                ))}
+                {showNewSubject ? (
+                  <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                    <input value={newSubjectName} onChange={(e) => setNewSubjectName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addSubjectFromTimer()} placeholder="과목명" autoFocus style={{ width: '70px', padding: '4px 8px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '11px', outline: 'none', color: '#4A3728' }} />
+                    <span onClick={addSubjectFromTimer} style={{ fontSize: '11px', color: '#C9A882', cursor: 'pointer' }}>추가</span>
+                    <span onClick={() => { setShowNewSubject(false); setNewSubjectName('') }} style={{ fontSize: '11px', color: '#C4B8A8', cursor: 'pointer' }}>취소</span>
+                  </div>
+                ) : (
+                  <span onClick={() => setShowNewSubject(true)} style={{ fontSize: '12px', color: '#C9A882', cursor: 'pointer', width: '24px', height: '24px', borderRadius: '50%', border: '1px dashed #C9A882', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</span>
+                )}
               </div>
+              <button onClick={startTimer} style={{ width: '100%', background: '#C9A882', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px', fontSize: '14px', cursor: 'pointer' }}>
+                {timerSubject ? `${timerSubject} 시작` : '공부 시작'}
+              </button>
             </div>
           ) : (
             <div style={{ textAlign: 'center' }}>
