@@ -21,6 +21,7 @@ export default function Dashboard() {
   const [weeklyStats, setWeeklyStats] = useState([])
   const [weekOffset, setWeekOffset] = useState(0)
   const [subjects, setSubjects] = useState([])
+  const [sessionDate, setSessionDate] = useState(getToday())
   const intervalRef = useRef(null)
 
   useEffect(() => {
@@ -33,7 +34,7 @@ export default function Dashboard() {
       await Promise.all([
         fetchDdays(user.id),
         fetchStreak(user.id),
-        fetchSessions(user.id),
+        fetchSessions(user.id, getToday()),
         fetchWeeklyStats(user.id),
       ])
       setLoading(false)
@@ -90,10 +91,25 @@ export default function Dashboard() {
     fetchStreak(user.id)
   }
 
-  const fetchSessions = async (uid) => {
-    const today = getToday()
-    const { data } = await supabase.from('study_sessions').select('*').eq('user_id', uid).eq('date', today).order('created_at', { ascending: false })
+  const fetchSessions = async (uid, date) => {
+    const d = date || getToday()
+    const { data } = await supabase.from('study_sessions').select('*').eq('user_id', uid).eq('date', d).order('created_at', { ascending: false })
     setSessions(data || [])
+  }
+
+  useEffect(() => {
+    if (user) fetchSessions(user.id, sessionDate)
+  }, [user, sessionDate])
+
+  const deleteSession = async (id) => {
+    await supabase.from('study_sessions').delete().eq('id', id)
+    setSessions(sessions.filter(s => s.id !== id))
+  }
+
+  const changeSessionDate = (offset) => {
+    const d = new Date(sessionDate + 'T00:00:00')
+    d.setDate(d.getDate() + offset)
+    setSessionDate(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`)
   }
 
   useEffect(() => {
@@ -136,8 +152,8 @@ export default function Dashboard() {
     setTimerRunning(false)
     const minutes = Math.max(1, Math.round(timerSeconds / 60))
     if (user) {
-      await supabase.from('study_sessions').insert({ user_id: user.id, subject: timerSubject, duration_minutes: minutes })
-      fetchSessions(user.id)
+      await supabase.from('study_sessions').insert({ user_id: user.id, subject: timerSubject, duration_minutes: minutes, date: getToday() })
+      fetchSessions(user.id, sessionDate)
       fetchWeeklyStats(user.id)
     }
     setTimerSeconds(0)
@@ -236,21 +252,51 @@ export default function Dashboard() {
             </div>
           )}
 
-          {sessions.length > 0 && (
-            <div style={{ marginTop: '16px', borderTop: '0.5px solid #F0EAE0', paddingTop: '12px' }}>
-              <span style={{ fontSize: '12px', color: '#9A8A78' }}>오늘 기록</span>
-              {sessions.map(s => (
-                <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: '13px' }}>
-                  <span style={{ color: '#4A3728' }}>{s.subject}</span>
-                  <span style={{ color: '#C9A882' }}>{s.duration_minutes}분</span>
-                </div>
-              ))}
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0 0', fontSize: '14px', fontWeight: '500', borderTop: '0.5px solid #F0EAE0' }}>
-                <span style={{ color: '#6B5B45' }}>합계</span>
-                <span style={{ color: '#C9A882' }}>{sessions.reduce((s, v) => s + v.duration_minutes, 0)}분</span>
-              </div>
+          {/* 기록 날짜 이동 */}
+          <div style={{ marginTop: '16px', borderTop: '0.5px solid #F0EAE0', paddingTop: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <span onClick={() => changeSessionDate(-1)} style={{ fontSize: '14px', color: '#9A8A78', cursor: 'pointer', padding: '2px 6px' }}>◀</span>
+              <span style={{ fontSize: '12px', color: '#9A8A78' }}>{sessionDate === getToday() ? '오늘 기록' : new Date(sessionDate + 'T00:00:00').toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }) + ' 기록'}</span>
+              <span onClick={() => sessionDate < getToday() && changeSessionDate(1)} style={{ fontSize: '14px', color: sessionDate < getToday() ? '#9A8A78' : '#E8E0D4', cursor: sessionDate < getToday() ? 'pointer' : 'default', padding: '2px 6px' }}>▶</span>
             </div>
-          )}
+            {sessions.length === 0 ? (
+              <p style={{ fontSize: '12px', color: '#C4B8A8', textAlign: 'center', padding: '8px 0' }}>기록이 없어요</p>
+            ) : (
+              <>
+                {/* 과목별 시간 */}
+                {(() => {
+                  const bySubject = {}
+                  sessions.forEach(s => { bySubject[s.subject] = (bySubject[s.subject] || 0) + s.duration_minutes })
+                  return Object.entries(bySubject).map(([name, min]) => {
+                    const sub = subjects.find(s => s.name === name)
+                    return (
+                      <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', fontSize: '13px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: sub?.color || '#C9A882' }} />
+                          <span style={{ color: '#4A3728' }}>{name}</span>
+                        </div>
+                        <span style={{ color: '#C9A882', fontWeight: '500' }}>{min}분</span>
+                      </div>
+                    )
+                  })
+                })()}
+                {/* 개별 기록 */}
+                <div style={{ marginTop: '8px', borderTop: '0.5px solid #F0EAE0', paddingTop: '8px' }}>
+                  {sessions.map(s => (
+                    <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', fontSize: '12px' }}>
+                      <span style={{ color: '#9A8A78' }}>{s.subject} — {s.duration_minutes}분</span>
+                      <span onClick={() => deleteSession(s.id)} style={{ color: '#D4C8B8', cursor: 'pointer', fontSize: '14px' }}>×</span>
+                    </div>
+                  ))}
+                </div>
+                {/* 총 시간 */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0 0', fontSize: '14px', fontWeight: '500', borderTop: '0.5px solid #F0EAE0', marginTop: '4px' }}>
+                  <span style={{ color: '#6B5B45' }}>총 공부시간</span>
+                  <span style={{ color: '#C9A882' }}>{(() => { const t = sessions.reduce((s, v) => s + v.duration_minutes, 0); return t >= 60 ? `${Math.floor(t/60)}시간 ${t%60}분` : `${t}분` })()}</span>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* 프리미엄 기능 */}
