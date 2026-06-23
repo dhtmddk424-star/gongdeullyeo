@@ -12,6 +12,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [showOtp, setShowOtp] = useState(false)
   const [otp, setOtp] = useState('')
+  const [autoLogin, setAutoLogin] = useState(true)
 
   const handleAuth = async () => {
     setLoading(true)
@@ -34,7 +35,11 @@ export default function Login() {
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) setMessage('이메일 또는 비밀번호가 틀렸어요.')
-      else router.push('/')
+      else {
+        if (autoLogin) localStorage.setItem('auto-login', 'true')
+        else localStorage.removeItem('auto-login')
+        router.push('/')
+      }
     }
     setLoading(false)
   }
@@ -120,6 +125,13 @@ export default function Login() {
                 style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '14px', outline: 'none', boxSizing: 'border-box', color: '#4a3728' }}
               />
             </div>
+
+            {!isSignUp && (
+              <label style={{ fontSize: '13px', color: '#9A8A78', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '16px', cursor: 'pointer' }}>
+                <input type="checkbox" checked={autoLogin} onChange={(e) => setAutoLogin(e.target.checked)} style={{ accentColor: '#C9A882' }} />
+                자동 로그인
+              </label>
+            )}
 
             {message && <p style={{ fontSize: '13px', color: '#C9A882', marginBottom: '16px', textAlign: 'center' }}>{message}</p>}
 
