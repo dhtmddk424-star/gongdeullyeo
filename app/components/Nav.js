@@ -35,14 +35,19 @@ export default function Nav() {
   return (
     <nav style={{ background: '#FAF7F2', borderBottom: '0.5px solid #E8E0D4', position: 'sticky', top: 0, zIndex: 100 }}>
       <div style={{ display: 'flex', alignItems: 'center', height: '52px', padding: '0 1rem' }}>
-        {/* 로고 - 고정 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', flexShrink: 0 }} onClick={() => router.push('/')}>
-          <img src="/icon-192.png" alt="공로그" style={{ width: '26px', height: '26px', borderRadius: '6px' }} />
-          <span style={{ fontSize: '16px', fontWeight: '500', color: '#6B5B45' }}>공로그</span>
+        {/* 뒤로가기 + 로고 - 고정 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+          {pathname !== '/' && (
+            <span onClick={() => router.back()} style={{ fontSize: '18px', color: '#9A8A78', cursor: 'pointer', padding: '4px 4px 4px 0' }}>←</span>
+          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }} onClick={() => router.push('/')}>
+            <img src="/icon-192.png" alt="공로그" style={{ width: '26px', height: '26px', borderRadius: '6px' }} />
+            <span style={{ fontSize: '16px', fontWeight: '500', color: '#6B5B45' }}>공로그</span>
+          </div>
         </div>
 
-        {/* 메뉴 - 스크롤 가능 */}
-        <div style={{ flex: 1, overflow: 'auto', display: 'flex', alignItems: 'center', gap: '14px', padding: '0 12px', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        {/* 메뉴 - 스크롤 가능, 오른쪽 정렬 */}
+        <div style={{ flex: 1, overflow: 'auto', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', padding: '0 12px', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           <style>{`.nav-scroll::-webkit-scrollbar { display: none; }`}</style>
           <div className="nav-scroll" style={{ display: 'flex', gap: '14px', alignItems: 'center', whiteSpace: 'nowrap' }}>
             {links.map(l => (
