@@ -234,7 +234,7 @@ function Community() {
       <section style={{ maxWidth: '600px', margin: '0 auto', padding: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
           <h1 style={{ fontSize: '22px', fontWeight: '500', color: '#4A3728' }}>인증 피드 🌱</h1>
-          <span style={{ fontSize: '13px', color: '#9A8A78', cursor: 'pointer' }} onClick={() => router.push('/groups')}>스터디 그룹</span>
+          <span style={{ fontSize: '13px', color: '#9A8A78', cursor: 'pointer' }} onClick={() => alert('서비스 준비중입니다.')}>스터디 그룹</span>
         </div>
 
         {/* #16 해시태그 필터 */}
