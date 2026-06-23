@@ -42,12 +42,7 @@ export default function Planner() {
       setSubjects(subs || [])
     }
     getUser()
-    const onFocus = () => {
-      const today = new Date().toISOString().split('T')[0]
-      setSelectedDate(prev => prev === new Date(Date.now() - 86400000).toISOString().split('T')[0] ? today : prev)
-    }
-    window.addEventListener('focus', onFocus)
-    return () => window.removeEventListener('focus', onFocus)
+    setSelectedDate(new Date().toISOString().split('T')[0])
   }, [router])
 
   useEffect(() => {

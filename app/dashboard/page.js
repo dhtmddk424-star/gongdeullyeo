@@ -38,7 +38,9 @@ export default function Dashboard() {
       setLoading(false)
     }
     load()
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
+    const onVisible = () => { if (document.visibilityState === 'visible') load() }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); document.removeEventListener('visibilitychange', onVisible) }
   }, [router])
 
   const fetchDdays = async (uid) => {
