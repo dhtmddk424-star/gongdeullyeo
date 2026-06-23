@@ -511,7 +511,7 @@ export default function Planner() {
                 <div style={{ padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '10px', borderBottom: '1.5px solid #E8E0D4' }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: '10px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '4px' }}>오늘도 공들여</div>
-                    <div style={{ fontSize: '15px', fontWeight: '600', color: '#4A3728', lineHeight: '1.5' }}>{exportData.quote}</div>
+                    <div style={{ fontSize: '15px', fontWeight: '600', color: '#4A3728', lineHeight: '1.5', wordBreak: 'keep-all', overflowWrap: 'break-word' }}>{exportData.quote}</div>
                   </div>
                   <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
                     {exportData.showTime && (
@@ -542,12 +542,12 @@ export default function Planner() {
                     /* 디자인2: TASKS + TIMETABLE 2열 */
                     <div style={{ display: 'flex', height: '100%' }}>
                       {/* 왼쪽: TASKS + 피드백 */}
-                      <div style={{ flex: 1, padding: '12px 14px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                      <div style={{ flex: 1, padding: '12px 14px 0', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                         <div style={{ fontSize: '10px', fontWeight: '700', color: '#9A8A78', marginBottom: '8px', letterSpacing: '2px' }}>TASKS</div>
                         <div style={{ flex: 1, overflow: 'hidden' }}>
                           {Object.entries(grouped).map(([name, { goals: gList, color }]) => (
                             <div key={name} style={{ marginBottom: '8px' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px', background: color + '15', borderRadius: '4px', marginBottom: '4px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px', background: color + '15', borderLeft: `3px solid ${color}`, marginBottom: '4px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                   <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: color }} />
                                   <span style={{ fontSize: '11px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
@@ -564,26 +564,32 @@ export default function Planner() {
                           ))}
                         </div>
                         {exportData.showFeedback && feedback && (
-                          <div style={{ borderTop: '1px solid #E8E0D4', paddingTop: '8px', marginTop: '6px' }}>
+                          <div style={{ paddingTop: '8px', paddingBottom: '10px', marginTop: '4px' }}>
                             <div style={{ fontSize: '9px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '3px' }}>오늘의 피드백</div>
                             <div style={{ fontSize: '10px', color: '#4A3728', lineHeight: '1.5', fontStyle: 'italic' }}>"{feedback}"</div>
                           </div>
                         )}
                       </div>
-                      {/* 오른쪽: TIMETABLE 7~1시 (5분 단위 12칸) */}
-                      <div style={{ width: '115px', padding: '12px 10px', flexShrink: 0, display: 'flex', flexDirection: 'column', borderLeft: '1px solid #E8E0D4' }}>
+                      {/* 세로 구분선 (height 100%) */}
+                      <div style={{ width: '1px', background: '#E8E0D4', flexShrink: 0 }} />
+                      {/* 오른쪽: TIMETABLE 7~1시 */}
+                      <div style={{ width: '110px', padding: '12px 10px 0', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
                         <div style={{ fontSize: '10px', fontWeight: '700', color: '#9A8A78', marginBottom: '6px', letterSpacing: '2px' }}>TIME TABLE</div>
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1px' }}>
                         {Array.from({ length: 19 }, (_, i) => (i + 7) % 24).map(h => {
                           const slots = sessionSlots[h] || {}
+                          const filledCount = Object.keys(slots).length
+                          const mainSlot = Object.values(slots)[0]
+                          const fillPct = Math.round((filledCount / 12) * 100)
                           return (
                             <div key={h} style={{ display: 'flex', alignItems: 'center', gap: '3px', flex: 1 }}>
                               <span style={{ width: '14px', color: '#C4B8A8', textAlign: 'right', fontSize: '8px', flexShrink: 0 }}>{String(h).padStart(2, '0')}</span>
-                              <div style={{ flex: 1, display: 'flex', gap: '0.5px', height: '100%' }}>
-                                {Array.from({ length: 12 }, (_, s) => {
-                                  const slot = slots[s]
-                                  return <div key={s} style={{ flex: 1, borderRadius: '1px', background: slot ? slot.color : '#F0EAE0', minHeight: '8px' }} />
-                                })}
+                              <div style={{ flex: 1, height: '100%', borderRadius: '2px', background: '#F0EAE0', overflow: 'hidden', position: 'relative' }}>
+                                {fillPct > 0 && mainSlot && (
+                                  <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${fillPct}%`, background: mainSlot.color, borderRadius: '2px', display: 'flex', alignItems: 'center', paddingLeft: '3px' }}>
+                                    {fillPct > 30 && <span style={{ fontSize: '7px', color: '#fff', fontWeight: '500' }}>{mainSlot.subject}</span>}
+                                  </div>
+                                )}
                               </div>
                             </div>
                           )
