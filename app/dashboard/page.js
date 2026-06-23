@@ -18,6 +18,7 @@ export default function Dashboard() {
   const [timerSubject, setTimerSubject] = useState('')
   const [sessions, setSessions] = useState([])
   const [weeklyStats, setWeeklyStats] = useState([])
+  const [subjects, setSubjects] = useState([])
   const intervalRef = useRef(null)
 
   useEffect(() => {
@@ -25,6 +26,8 @@ export default function Dashboard() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
       setUser(user)
+      const { data: subs } = await supabase.from('subjects').select('*').eq('user_id', user.id).order('sort_order')
+      setSubjects(subs || [])
       await Promise.all([
         fetchDdays(user.id),
         fetchStreak(user.id),
@@ -197,9 +200,18 @@ export default function Dashboard() {
           <span style={{ fontSize: '13px', color: '#6B5B45', fontWeight: '500', display: 'block', marginBottom: '12px' }}>공부 타이머</span>
 
           {!timerRunning ? (
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <input placeholder="과목명 (예: 수학)" value={timerSubject} onChange={(e) => setTimerSubject(e.target.value)} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '14px', outline: 'none', color: '#4A3728' }} />
-              <button onClick={startTimer} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', cursor: 'pointer' }}>시작</button>
+            <div>
+              {subjects.length > 0 && (
+                <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                  {subjects.map(s => (
+                    <span key={s.id} onClick={() => setTimerSubject(s.name)} style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '12px', cursor: 'pointer', background: timerSubject === s.name ? s.color : '#fff', color: timerSubject === s.name ? '#fff' : s.color, border: `1px solid ${s.color}` }}>{s.name}</span>
+                  ))}
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input placeholder="과목명 직접 입력" value={timerSubject} onChange={(e) => setTimerSubject(e.target.value)} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '14px', outline: 'none', color: '#4A3728' }} />
+                <button onClick={startTimer} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', cursor: 'pointer' }}>시작</button>
+              </div>
             </div>
           ) : (
             <div style={{ textAlign: 'center' }}>
