@@ -53,7 +53,8 @@ export default function Dashboard() {
   }
 
   const addDday = async () => {
-    if (!newDday.title || !newDday.target_date || !user) return
+    if (requireLogin()) return
+    if (!newDday.title || !newDday.target_date) return
     await supabase.from('ddays').insert({ user_id: user.id, ...newDday })
     fetchDdays(user.id)
     setNewDday({ title: '', target_date: '' })
@@ -86,7 +87,8 @@ export default function Dashboard() {
   }
 
   const checkIn = async () => {
-    if (!user || todayChecked) return
+    if (requireLogin()) return
+    if (todayChecked) return
     const today = getToday()
     await supabase.from('streaks').insert({ user_id: user.id, date: today })
     setTodayChecked(true)
@@ -160,6 +162,7 @@ export default function Dashboard() {
   const [timerStartedAt, setTimerStartedAt] = useState(null)
 
   const startTimer = () => {
+    if (requireLogin()) return
     if (!timerSubject.trim()) setTimerSubject('기타')
     setTimerRunning(true)
     setTimerPaused(false)
@@ -223,20 +226,13 @@ export default function Dashboard() {
 
   if (loading) return <main style={{ minHeight: '100vh', background: '#FAF7F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: '#9A8A78' }}>불러오는 중...</p></main>
 
-  if (!user) return (
-    <main style={{ minHeight: '100vh', background: '#FAF7F2', fontFamily: 'sans-serif' }}>
-      <Nav />
-      <section style={{ maxWidth: '600px', margin: '0 auto', padding: '3rem 2rem', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '22px', fontWeight: '500', color: '#4A3728', marginBottom: '12px' }}>대시보드</h1>
-        <p style={{ fontSize: '14px', color: '#9A8A78', marginBottom: '8px' }}>D-day, 타이머, 스트릭을 관리해보세요</p>
-        <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '2rem', marginBottom: '16px' }}>
-          <div style={{ fontSize: '40px', marginBottom: '12px' }}>📊</div>
-          <p style={{ fontSize: '14px', color: '#9A8A78', marginBottom: '16px' }}>로그인하면 대시보드를 사용할 수 있어요</p>
-          <button onClick={() => router.push('/login')} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '20px', padding: '10px 24px', fontSize: '14px', cursor: 'pointer' }}>로그인하기</button>
-        </div>
-      </section>
-    </main>
-  )
+  const requireLogin = () => {
+    if (!user) {
+      if (confirm('로그인해야 사용할 수 있어요. 회원가입하러 가시겠어요?')) router.push('/login')
+      return true
+    }
+    return false
+  }
 
   return (
     <main style={{ minHeight: '100vh', background: '#FAF7F2', fontFamily: 'sans-serif' }}>

@@ -48,7 +48,7 @@ export default function Nav() {
             {links.map(l => (
               <span
                 key={l.path}
-                onClick={() => { if (l.path === '/store' && !user) { router.push('/login'); return } router.push(l.path) }}
+                onClick={() => router.push(l.path)}
                 style={{
                   fontSize: '13px',
                   color: pathname === l.path ? '#C9A882' : '#9A8A78',

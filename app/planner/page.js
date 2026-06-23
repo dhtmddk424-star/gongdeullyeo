@@ -103,6 +103,7 @@ export default function Planner() {
   }
 
   const toggleGoal = async (goal) => {
+    if (requireLogin()) return
     const newDone = !goal.done
     await supabase.from('goals').update({ done: newDone }).eq('id', goal.id)
     const updated = goals.map(g => g.id === goal.id ? { ...g, done: newDone } : g)
@@ -134,7 +135,8 @@ export default function Planner() {
   }
 
   const addGoal = async () => {
-    if (!newGoal.trim() || !user) return
+    if (requireLogin()) return
+    if (!newGoal.trim()) return
     const { data } = await supabase.from('goals').insert({ user_id: user.id, text: newGoal, done: false, date: selectedDate, subject_id: selectedSubject }).select()
     if (data) setGoals([...goals, data[0]])
     setNewGoal('')
@@ -151,7 +153,7 @@ export default function Planner() {
   }
 
   const saveFeedback = async () => {
-    if (!user) return
+    if (requireLogin()) return
     await supabase.from('daily_feedback').upsert({ user_id: user.id, date: selectedDate, feedback }, { onConflict: 'user_id,date' })
     setSavedFeedback(true)
     setTimeout(() => setSavedFeedback(false), 2000)
@@ -249,20 +251,13 @@ export default function Planner() {
 
   if (loading) return <main style={{ minHeight: '100vh', background: '#FAF7F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: '#9A8A78' }}>불러오는 중...</p></main>
 
-  if (!user) return (
-    <main style={{ minHeight: '100vh', background: '#FAF7F2', fontFamily: 'sans-serif' }}>
-      <Nav />
-      <section style={{ maxWidth: '600px', margin: '0 auto', padding: '3rem 2rem', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '22px', fontWeight: '500', color: '#4A3728', marginBottom: '12px' }}>오늘의 플래너</h1>
-        <p style={{ fontSize: '14px', color: '#9A8A78', marginBottom: '8px' }}>할일을 관리하고 공부 진행도를 확인해보세요</p>
-        <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '2rem', marginBottom: '16px' }}>
-          <div style={{ fontSize: '40px', marginBottom: '12px' }}>📝</div>
-          <p style={{ fontSize: '14px', color: '#9A8A78', marginBottom: '16px' }}>로그인하면 플래너를 사용할 수 있어요</p>
-          <button onClick={() => router.push('/login')} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '20px', padding: '10px 24px', fontSize: '14px', cursor: 'pointer' }}>로그인하기</button>
-        </div>
-      </section>
-    </main>
-  )
+  const requireLogin = () => {
+    if (!user) {
+      if (confirm('로그인해야 사용할 수 있어요. 회원가입하러 가시겠어요?')) router.push('/login')
+      return true
+    }
+    return false
+  }
 
   return (
     <main style={{ minHeight: '100vh', background: '#FAF7F2', fontFamily: 'sans-serif' }}>

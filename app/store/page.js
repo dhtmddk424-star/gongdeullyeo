@@ -85,6 +85,21 @@ export default function Store() {
 
   if (loading) return <main style={{ minHeight: '100vh', background: '#FAF7F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: '#9A8A78' }}>불러오는 중...</p></main>
 
+  if (!user) return (
+    <main style={{ minHeight: '100vh', background: '#FAF7F2', fontFamily: 'sans-serif' }}>
+      <Nav />
+      <section style={{ maxWidth: '600px', margin: '0 auto', padding: '3rem 2rem', textAlign: 'center' }}>
+        <h1 style={{ fontSize: '22px', fontWeight: '500', color: '#4A3728', marginBottom: '12px' }}>학습 자료 📚</h1>
+        <p style={{ fontSize: '14px', color: '#9A8A78', marginBottom: '8px' }}>공부 자료를 공유하고 함께 성장해요</p>
+        <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '2rem' }}>
+          <div style={{ fontSize: '40px', marginBottom: '12px' }}>📚</div>
+          <p style={{ fontSize: '14px', color: '#9A8A78', marginBottom: '16px' }}>로그인해야 자료실을 이용할 수 있어요</p>
+          <button onClick={() => router.push('/login')} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '20px', padding: '10px 24px', fontSize: '14px', cursor: 'pointer' }}>회원가입하러 가기</button>
+        </div>
+      </section>
+    </main>
+  )
+
   return (
     <main style={{ minHeight: '100vh', background: '#FAF7F2', fontFamily: 'sans-serif' }}>
       <Nav />
