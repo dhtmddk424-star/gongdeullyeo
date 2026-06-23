@@ -282,7 +282,7 @@ function Community() {
                   <>
                     <p style={{ fontSize: '14px', color: '#4A3728', lineHeight: '1.6', margin: 0, whiteSpace: 'pre-wrap' }}>{isExpanded || !isLong ? ann.content : preview + '...'}</p>
                     {isLong && (
-                      <span onClick={() => { const s = new Set(expandedAnns); isExpanded ? s.delete(ann.id) : s.add(ann.id); setExpandedAnns(s) }} style={{ fontSize: '12px', color: '#C9A882', cursor: 'pointer', marginTop: '4px', display: 'inline-block' }}>
+                      <span onClick={() => { if (!user) { if (confirm('로그인해야 볼 수 있어요. 회원가입하러 가시겠어요?')) router.push('/login'); return } const s = new Set(expandedAnns); isExpanded ? s.delete(ann.id) : s.add(ann.id); setExpandedAnns(s) }} style={{ fontSize: '12px', color: '#C9A882', cursor: 'pointer', marginTop: '4px', display: 'inline-block' }}>
                         {isExpanded ? '접기' : '더보기'}
                       </span>
                     )}
