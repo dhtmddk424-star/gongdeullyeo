@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 import { getNicknames } from '../../lib/getNickname'
+import Nav from '../components/Nav'
 
 export default function Store() {
   const router = useRouter()
@@ -14,12 +15,17 @@ export default function Store() {
   const [form, setForm] = useState({ title: '', description: '', price: 0, is_paid: false })
   const [file, setFile] = useState(null)
   const [nicknames, setNicknames] = useState({})
+  const [isAdmin, setIsAdmin] = useState(false)
   const fileRef = useRef()
 
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
+      if (user) {
+        const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+        setIsAdmin(data?.role === 'admin')
+      }
       fetchMaterials()
     }
     getUser()
@@ -81,20 +87,7 @@ export default function Store() {
 
   return (
     <main style={{ minHeight: '100vh', background: '#FAF7F2', fontFamily: 'sans-serif' }}>
-      <nav style={{ background: '#FAF7F2', borderBottom: '0.5px solid #E8E0D4', padding: '0 2rem', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: '17px', fontWeight: '500', color: '#6B5B45', cursor: 'pointer' }} onClick={() => router.push('/')}>공들여 📖</div>
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <span style={{ fontSize: '13px', color: '#9A8A78', cursor: 'pointer' }} onClick={() => router.push('/planner')}>플래너</span>
-          <span style={{ fontSize: '13px', color: '#9A8A78', cursor: 'pointer' }} onClick={() => router.push('/dashboard')}>대시보드</span>
-          <span style={{ fontSize: '13px', color: '#9A8A78', cursor: 'pointer' }} onClick={() => router.push('/community')}>커뮤니티</span>
-          <span style={{ fontSize: '13px', color: '#C9A882', fontWeight: '500' }}>자료</span>
-          {user ? (
-            <button onClick={async () => { await supabase.auth.signOut(); router.push('/') }} style={{ background: 'transparent', color: '#9A8A78', border: '0.5px solid #D4C8B8', borderRadius: '20px', padding: '6px 16px', fontSize: '13px', cursor: 'pointer' }}>로그아웃</button>
-          ) : (
-            <button onClick={() => router.push('/login')} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '20px', padding: '6px 16px', fontSize: '13px', cursor: 'pointer' }}>로그인</button>
-          )}
-        </div>
-      </nav>
+      <Nav />
 
       <section style={{ maxWidth: '680px', margin: '0 auto', padding: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
@@ -173,7 +166,7 @@ export default function Store() {
                 </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
-                {user?.id === item.user_id && (
+                {(user?.id === item.user_id || isAdmin) && (
                   <span onClick={() => deleteMaterial(item.id)} style={{ fontSize: '14px', color: '#D4C8B8', cursor: 'pointer' }}>×</span>
                 )}
                 {item.is_paid ? (

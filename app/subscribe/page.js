@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 import { checkPremium } from '../../lib/subscription'
+import Nav from '../components/Nav'
 
 export default function Subscribe() {
   const router = useRouter()
@@ -30,14 +31,7 @@ export default function Subscribe() {
 
   return (
     <main style={{ minHeight: '100vh', background: '#FAF7F2', fontFamily: 'sans-serif' }}>
-      <nav style={{ background: '#FAF7F2', borderBottom: '0.5px solid #E8E0D4', padding: '0 2rem', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: '17px', fontWeight: '500', color: '#6B5B45', cursor: 'pointer' }} onClick={() => router.push('/')}>공들여 📖</div>
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <span style={{ fontSize: '13px', color: '#9A8A78', cursor: 'pointer' }} onClick={() => router.push('/planner')}>플래너</span>
-          <span style={{ fontSize: '13px', color: '#9A8A78', cursor: 'pointer' }} onClick={() => router.push('/dashboard')}>대시보드</span>
-          <button onClick={async () => { await supabase.auth.signOut(); router.push('/') }} style={{ background: 'transparent', color: '#9A8A78', border: '0.5px solid #D4C8B8', borderRadius: '20px', padding: '6px 16px', fontSize: '13px', cursor: 'pointer' }}>로그아웃</button>
-        </div>
-      </nav>
+      <Nav />
 
       <section style={{ maxWidth: '500px', margin: '0 auto', padding: '3rem 2rem', textAlign: 'center' }}>
         <h1 style={{ fontSize: '28px', fontWeight: '500', color: '#4A3728', marginBottom: '8px' }}>공들여 프리미엄</h1>
@@ -68,7 +62,7 @@ export default function Subscribe() {
                   <li>✓ D-day / 스트릭</li>
                   <li>✓ 공부 타이머</li>
                   <li>✓ 인스타 카드</li>
-                  <li style={{ color: '#D4C8B8' }}>✕ AI 플래너 파싱</li>
+                  <li style={{ color: '#D4C8B8' }}>✕ AI 학습 도우미</li>
                   <li style={{ color: '#D4C8B8' }}>✕ AI 학습 리포트</li>
                 </ul>
               </div>

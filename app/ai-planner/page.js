@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 import { checkPremium } from '../../lib/subscription'
+import Nav from '../components/Nav'
 
 export default function AiPlanner() {
   const router = useRouter()
@@ -33,7 +34,7 @@ export default function AiPlanner() {
     // AI 파싱 로직 (추후 Anthropic API 연동)
     setTimeout(() => {
       setResult({
-        message: 'AI 플래너 파싱은 곧 활성화됩니다!',
+        message: 'AI 학습 도우미는 곧 활성화됩니다!',
         description: 'Anthropic Claude API와 연동하여 PDF/이미지에서 학습 계획을 자동으로 추출하고, 날짜별 할일 목록을 생성합니다.'
       })
       setParsing(false)
@@ -44,18 +45,11 @@ export default function AiPlanner() {
 
   return (
     <main style={{ minHeight: '100vh', background: '#FAF7F2', fontFamily: 'sans-serif' }}>
-      <nav style={{ background: '#FAF7F2', borderBottom: '0.5px solid #E8E0D4', padding: '0 2rem', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: '17px', fontWeight: '500', color: '#6B5B45', cursor: 'pointer' }} onClick={() => router.push('/')}>공들여 📖</div>
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <span style={{ fontSize: '13px', color: '#9A8A78', cursor: 'pointer' }} onClick={() => router.push('/planner')}>플래너</span>
-          <span style={{ fontSize: '13px', color: '#9A8A78', cursor: 'pointer' }} onClick={() => router.push('/dashboard')}>대시보드</span>
-          <button onClick={async () => { await supabase.auth.signOut(); router.push('/') }} style={{ background: 'transparent', color: '#9A8A78', border: '0.5px solid #D4C8B8', borderRadius: '20px', padding: '6px 16px', fontSize: '13px', cursor: 'pointer' }}>로그아웃</button>
-        </div>
-      </nav>
+      <Nav />
 
       <section style={{ maxWidth: '600px', margin: '0 auto', padding: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-          <h1 style={{ fontSize: '22px', fontWeight: '500', color: '#4A3728' }}>AI 학습 플래너</h1>
+          <h1 style={{ fontSize: '22px', fontWeight: '500', color: '#4A3728' }}>AI 학습 도우미</h1>
           <span style={{ background: '#C9A882', color: '#fff', fontSize: '11px', padding: '2px 8px', borderRadius: '10px' }}>프리미엄</span>
         </div>
         <p style={{ fontSize: '14px', color: '#9A8A78', marginBottom: '2rem' }}>학습 계획표를 업로드하면 AI가 날짜별 할일을 자동 생성해요</p>
