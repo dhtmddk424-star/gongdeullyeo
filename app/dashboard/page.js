@@ -100,10 +100,15 @@ export default function Dashboard() {
   }, [user, weekOffset])
 
   const fetchWeeklyStats = async (uid, offset = 0) => {
+    const today = new Date()
+    const dayOfWeek = today.getDay()
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+    const monday = new Date(today)
+    monday.setDate(today.getDate() + mondayOffset + offset * 7)
     const dates = []
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date()
-      d.setDate(d.getDate() - i + offset * 7)
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday)
+      d.setDate(monday.getDate() + i)
       dates.push(d.toISOString().split('T')[0])
     }
     const { data } = await supabase.from('study_sessions').select('date, duration_minutes').eq('user_id', uid).in('date', dates)
