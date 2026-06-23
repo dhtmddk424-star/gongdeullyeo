@@ -18,6 +18,7 @@ export default function Dashboard() {
   const [timerSubject, setTimerSubject] = useState('')
   const [sessions, setSessions] = useState([])
   const [weeklyStats, setWeeklyStats] = useState([])
+  const [weekOffset, setWeekOffset] = useState(0)
   const [subjects, setSubjects] = useState([])
   const intervalRef = useRef(null)
 
@@ -92,19 +93,25 @@ export default function Dashboard() {
     setSessions(data || [])
   }
 
-  const fetchWeeklyStats = async (uid) => {
+  useEffect(() => {
+    if (user) fetchWeeklyStats(user.id, weekOffset)
+  }, [user, weekOffset])
+
+  const fetchWeeklyStats = async (uid, offset = 0) => {
     const dates = []
     for (let i = 6; i >= 0; i--) {
       const d = new Date()
-      d.setDate(d.getDate() - i)
+      d.setDate(d.getDate() - i + offset * 7)
       dates.push(d.toISOString().split('T')[0])
     }
     const { data } = await supabase.from('study_sessions').select('date, duration_minutes').eq('user_id', uid).in('date', dates)
     const stats = dates.map(date => {
       const dayData = (data || []).filter(s => s.date === date)
       const total = dayData.reduce((sum, s) => sum + s.duration_minutes, 0)
-      const dayName = new Date(date + 'T00:00:00').toLocaleDateString('ko-KR', { weekday: 'short' })
-      return { date, dayName, total }
+      const d = new Date(date + 'T00:00:00')
+      const dayName = d.toLocaleDateString('ko-KR', { weekday: 'short' })
+      const dayNum = d.getDate()
+      return { date, dayName, dayNum, total }
     })
     setWeeklyStats(stats)
   }
@@ -252,13 +259,18 @@ export default function Dashboard() {
 
         {/* 주간 공부 시간 차트 */}
         <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1.25rem' }}>
-          <span style={{ fontSize: '13px', color: '#6B5B45', fontWeight: '500', display: 'block', marginBottom: '16px' }}>주간 공부 시간</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <span onClick={() => setWeekOffset(weekOffset - 1)} style={{ fontSize: '16px', color: '#9A8A78', cursor: 'pointer', padding: '2px 8px' }}>◀</span>
+            <span style={{ fontSize: '13px', color: '#6B5B45', fontWeight: '500' }}>주간 공부 시간</span>
+            <span onClick={() => weekOffset < 0 && setWeekOffset(weekOffset + 1)} style={{ fontSize: '16px', color: weekOffset < 0 ? '#9A8A78' : '#E8E0D4', cursor: weekOffset < 0 ? 'pointer' : 'default', padding: '2px 8px' }}>▶</span>
+          </div>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '120px', gap: '8px' }}>
             {weeklyStats.map((s, i) => (
               <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                 <span style={{ fontSize: '11px', color: '#9A8A78' }}>{s.total > 0 ? `${s.total}분` : ''}</span>
                 <div style={{ width: '100%', maxWidth: '40px', background: s.total > 0 ? '#C9A882' : '#F0EAE0', borderRadius: '4px 4px 0 0', height: `${Math.max(4, (s.total / maxMinutes) * 100)}px`, transition: 'height 0.3s' }} />
                 <span style={{ fontSize: '12px', color: '#6B5B45' }}>{s.dayName}</span>
+                <span style={{ fontSize: '10px', color: '#C4B8A8' }}>{s.dayNum}</span>
               </div>
             ))}
           </div>

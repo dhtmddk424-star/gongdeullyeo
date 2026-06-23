@@ -12,9 +12,13 @@ export async function POST(req) {
       const buffer = Buffer.from(bytes)
 
       if (file.name.endsWith('.pdf')) {
-        const pdfParse = (await import('pdf-parse')).default
-        const pdfData = await pdfParse(buffer)
-        text = pdfData.text
+        try {
+          const pdfParse = (await import('pdf-parse')).default
+          const pdfData = await pdfParse(buffer)
+          text = pdfData.text
+        } catch (e) {
+          return NextResponse.json({ error: 'PDF 처리 중 오류가 발생했습니다. 텍스트를 직접 붙여넣어 주세요.' }, { status: 400 })
+        }
       } else {
         text = buffer.toString('utf-8')
       }
