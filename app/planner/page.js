@@ -26,6 +26,7 @@ export default function Planner() {
   const [selectedSubject, setSelectedSubject] = useState(null)
   const [showSubjectForm, setShowSubjectForm] = useState(false)
   const [newSubjectName, setNewSubjectName] = useState('')
+  const [assigningGoalId, setAssigningGoalId] = useState(null)
 
   useEffect(() => {
     const getUser = async () => {
@@ -295,29 +296,47 @@ export default function Planner() {
           )}
         </div>
 
-        {/* 목표 */}
+        {/* 목표 (과목별 정렬, 미분류 맨 아래) */}
         <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1.25rem', marginBottom: '16px' }}>
           {goals.filter(g => !selectedSubject || g.subject_id === selectedSubject).length === 0 && <p style={{ fontSize: '14px', color: '#C4B8A8', textAlign: 'center', padding: '1rem 0' }}>목표를 추가해보세요!</p>}
-          {goals.filter(g => !selectedSubject || g.subject_id === selectedSubject).map(goal => {
-            const sub = subjects.find(s => s.id === goal.subject_id)
-            return (
-            <div key={goal.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 0', borderBottom: '0.5px solid #F0EAE0' }}>
-              {/* 분류 태그 (앞쪽, 클릭하면 변경) */}
-              <select
-                value={goal.subject_id || ''}
-                onChange={(e) => updateGoalSubject(goal.id, e.target.value ? Number(e.target.value) : null)}
-                style={{ width: '54px', padding: '2px', borderRadius: '6px', border: `1px solid ${sub?.color || '#E8E0D4'}`, fontSize: '10px', color: sub?.color || '#9A8A78', outline: 'none', background: '#fff', cursor: 'pointer', flexShrink: 0 }}
-              >
-                <option value="">미분류</option>
-                {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-              </select>
-              <div onClick={() => toggleGoal(goal)} style={{ width: '20px', height: '20px', borderRadius: '6px', border: goal.done ? 'none' : '0.5px solid #D4C8B8', background: goal.done ? '#C9A882' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-                {goal.done && <span style={{ color: '#fff', fontSize: '12px' }}>✓</span>}
-              </div>
-              <span style={{ flex: 1, fontSize: '14px', color: goal.done ? '#C4B8A8' : '#4A3728', textDecoration: goal.done ? 'line-through' : 'none' }}>{goal.text}</span>
-              <span onClick={() => deleteGoal(goal.id)} style={{ fontSize: '16px', color: '#D4C8B8', cursor: 'pointer' }}>×</span>
-            </div>
-          )})}
+          {(() => {
+            const filtered = goals.filter(g => !selectedSubject || g.subject_id === selectedSubject)
+            const sorted = [...filtered].sort((a, b) => {
+              const aIdx = a.subject_id ? subjects.findIndex(s => s.id === a.subject_id) : 999
+              const bIdx = b.subject_id ? subjects.findIndex(s => s.id === b.subject_id) : 999
+              return aIdx - bIdx
+            })
+            return sorted.map(goal => {
+              const sub = subjects.find(s => s.id === goal.subject_id)
+              const isAssigning = assigningGoalId === goal.id
+              return (
+                <div key={goal.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', borderBottom: '0.5px solid #F0EAE0' }}>
+                  {/* 분류 태그 앞쪽 */}
+                  {sub ? (
+                    <span onClick={() => updateGoalSubject(goal.id, null)} style={{ fontSize: '10px', color: sub.color, border: `1px solid ${sub.color}`, borderRadius: '6px', padding: '2px 6px', flexShrink: 0, whiteSpace: 'nowrap', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}>{sub.name}<span style={{ color: '#D4C8B8' }}>×</span></span>
+                  ) : (
+                    <span
+                      onClick={() => setAssigningGoalId(isAssigning ? null : goal.id)}
+                      style={{ width: '20px', height: '20px', borderRadius: '6px', border: '1px dashed #D4C8B8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, fontSize: '10px', color: '#D4C8B8', background: isAssigning ? '#FAF0E4' : 'transparent' }}
+                    >+</span>
+                  )}
+                  {/* 분류 할당 중이면 과목 버튼 표시 */}
+                  {isAssigning && (
+                    <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                      {subjects.map(s => (
+                        <span key={s.id} onClick={() => { updateGoalSubject(goal.id, s.id); setAssigningGoalId(null) }} style={{ fontSize: '10px', color: '#fff', background: s.color, borderRadius: '6px', padding: '2px 6px', cursor: 'pointer' }}>{s.name}</span>
+                      ))}
+                    </div>
+                  )}
+                  <div onClick={() => toggleGoal(goal)} style={{ width: '20px', height: '20px', borderRadius: '6px', border: goal.done ? 'none' : '0.5px solid #D4C8B8', background: goal.done ? '#C9A882' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+                    {goal.done && <span style={{ color: '#fff', fontSize: '12px' }}>✓</span>}
+                  </div>
+                  <span style={{ flex: 1, fontSize: '14px', color: goal.done ? '#C4B8A8' : '#4A3728', textDecoration: goal.done ? 'line-through' : 'none' }}>{goal.text}</span>
+                  <span onClick={() => deleteGoal(goal.id)} style={{ fontSize: '16px', color: '#D4C8B8', cursor: 'pointer' }}>×</span>
+                </div>
+              )
+            })
+          })()}
         </div>
 
         {/* 할일 추가 (선택된 탭의 과목으로 자동 분류) */}
