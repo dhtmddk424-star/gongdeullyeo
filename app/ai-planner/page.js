@@ -113,7 +113,8 @@ export default function AiPlanner() {
           <h1 style={{ fontSize: '22px', fontWeight: '500', color: '#4A3728' }}>AI 학습 도우미</h1>
           <span style={{ background: '#C9A882', color: '#fff', fontSize: '11px', padding: '2px 8px', borderRadius: '10px' }}>프리미엄</span>
         </div>
-        <p style={{ fontSize: '14px', color: '#9A8A78', marginBottom: '2rem' }}>학습 계획표를 입력하면 AI가 날짜별 할일을 자동 생성해요</p>
+        <p style={{ fontSize: '14px', color: '#9A8A78', marginBottom: '4px' }}>학습 계획표를 입력하면 AI가 날짜별 할일을 자동 생성해요</p>
+        <p style={{ fontSize: '12px', color: '#C4B8A8', marginBottom: '2rem' }}>지원 파일: PDF, 이미지(PNG, JPG), 텍스트(TXT), 직접 입력</p>
 
         {/* 입력 방법 */}
         <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1.5rem', marginBottom: '16px' }}>
