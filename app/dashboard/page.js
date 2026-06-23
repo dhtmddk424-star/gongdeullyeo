@@ -156,24 +156,50 @@ export default function Dashboard() {
     setShowNewSubject(false)
   }
 
+  const [timerPaused, setTimerPaused] = useState(false)
+  const [timerStartedAt, setTimerStartedAt] = useState(null)
+
   const startTimer = () => {
-    if (!timerSubject.trim()) setTimerSubject('미분류')
+    if (!timerSubject.trim()) setTimerSubject('기타')
     setTimerRunning(true)
+    setTimerPaused(false)
     setTimerSeconds(0)
+    setTimerStartedAt(new Date())
+    intervalRef.current = setInterval(() => setTimerSeconds(s => s + 1), 1000)
+  }
+
+  const pauseTimer = () => {
+    clearInterval(intervalRef.current)
+    setTimerPaused(true)
+  }
+
+  const resumeTimer = () => {
+    setTimerPaused(false)
     intervalRef.current = setInterval(() => setTimerSeconds(s => s + 1), 1000)
   }
 
   const stopTimer = async () => {
     clearInterval(intervalRef.current)
     setTimerRunning(false)
-    const minutes = Math.max(1, Math.round(timerSeconds / 60))
-    if (user) {
-      await supabase.from('study_sessions').insert({ user_id: user.id, subject: timerSubject, duration_minutes: minutes, date: getToday() })
+    setTimerPaused(false)
+    const sub = timerSubject || '기타'
+    const endedAt = new Date()
+    if (user && timerSeconds > 0) {
+      await supabase.from('study_sessions').insert({
+        user_id: user.id,
+        subject: sub,
+        duration_minutes: Math.max(1, Math.round(timerSeconds / 60)),
+        duration_seconds: timerSeconds,
+        started_at: timerStartedAt.toISOString(),
+        ended_at: endedAt.toISOString(),
+        date: getToday()
+      })
       fetchSessions(user.id, sessionDate)
-      fetchWeeklyStats(user.id)
+      fetchWeeklyStats(user.id, weekOffset)
     }
     setTimerSeconds(0)
     setTimerSubject('')
+    setTimerStartedAt(null)
   }
 
   const formatTime = (s) => {
@@ -249,7 +275,6 @@ export default function Dashboard() {
           {!timerRunning ? (
             <div>
               <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-                <span onClick={() => setTimerSubject('')} style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '12px', cursor: 'pointer', background: !timerSubject ? '#4A3728' : '#fff', color: !timerSubject ? '#fff' : '#9A8A78', border: '0.5px solid #E8E0D4' }}>미분류</span>
                 {subjects.map(s => (
                   <span key={s.id} onClick={() => setTimerSubject(timerSubject === s.name ? '' : s.name)} style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '12px', cursor: 'pointer', background: timerSubject === s.name ? s.color : '#fff', color: timerSubject === s.name ? '#fff' : s.color, border: `1px solid ${s.color}` }}>{s.name}</span>
                 ))}
@@ -264,14 +289,21 @@ export default function Dashboard() {
                 )}
               </div>
               <button onClick={startTimer} style={{ width: '100%', background: '#C9A882', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px', fontSize: '14px', cursor: 'pointer' }}>
-                {timerSubject ? `${timerSubject} 시작` : '공부 시작'}
+                {timerSubject ? `${timerSubject} 시작` : '시작'}
               </button>
             </div>
           ) : (
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '14px', color: '#6B5B45', marginBottom: '8px' }}>{timerSubject}</div>
-              <div style={{ fontSize: '48px', fontWeight: '600', color: '#C9A882', fontVariantNumeric: 'tabular-nums', marginBottom: '16px' }}>{formatTime(timerSeconds)}</div>
-              <button onClick={stopTimer} style={{ background: '#E8D9C8', color: '#6B5B45', border: 'none', borderRadius: '8px', padding: '10px 24px', fontSize: '14px', cursor: 'pointer' }}>종료 및 저장</button>
+              <div style={{ fontSize: '14px', color: '#6B5B45', marginBottom: '8px' }}>{timerSubject || '기타'}</div>
+              <div style={{ fontSize: '48px', fontWeight: '600', color: timerPaused ? '#D4C8B8' : '#C9A882', fontVariantNumeric: 'tabular-nums', marginBottom: '16px' }}>{formatTime(timerSeconds)}</div>
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                {timerPaused ? (
+                  <span onClick={resumeTimer} style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#C9A882', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '18px', color: '#fff' }}>▶</span>
+                ) : (
+                  <span onClick={pauseTimer} style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#E8D9C8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '16px', color: '#6B5B45' }}>❚❚</span>
+                )}
+                <span onClick={stopTimer} style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#4A3728', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '16px', color: '#fff' }}>■</span>
+              </div>
             </div>
           )}
 
@@ -305,12 +337,19 @@ export default function Dashboard() {
                 })()}
                 {/* 개별 기록 */}
                 <div style={{ marginTop: '8px', borderTop: '0.5px solid #F0EAE0', paddingTop: '8px' }}>
-                  {sessions.map(s => (
-                    <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', fontSize: '12px' }}>
-                      <span style={{ color: '#9A8A78' }}>{s.subject} — {s.duration_minutes}분</span>
+                  {sessions.map(s => {
+                    const secs = s.duration_seconds || s.duration_minutes * 60
+                    const timeStr = `${Math.floor(secs/3600) > 0 ? Math.floor(secs/3600)+':' : ''}${String(Math.floor((secs%3600)/60)).padStart(2,'0')}:${String(secs%60).padStart(2,'0')}`
+                    const startStr = s.started_at ? new Date(s.started_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : ''
+                    const endStr = s.ended_at ? new Date(s.ended_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : ''
+                    return (
+                    <div key={s.id} style={{ display: 'flex', alignItems: 'center', padding: '5px 0', fontSize: '12px', gap: '6px' }}>
+                      <span style={{ color: '#4A3728', flex: 1 }}>{s.subject}</span>
+                      {startStr && <span style={{ color: '#C4B8A8', fontSize: '10px' }}>{startStr}~{endStr}</span>}
+                      <span style={{ color: '#C9A882', fontWeight: '500', fontVariantNumeric: 'tabular-nums' }}>{timeStr}</span>
                       <span onClick={() => deleteSession(s.id)} style={{ color: '#D4C8B8', cursor: 'pointer', fontSize: '14px' }}>×</span>
                     </div>
-                  ))}
+                  )})}
                 </div>
                 {/* 총 시간 */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0 0', fontSize: '14px', fontWeight: '500', borderTop: '0.5px solid #F0EAE0', marginTop: '4px' }}>
