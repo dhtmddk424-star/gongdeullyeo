@@ -75,8 +75,8 @@ export default function Login() {
     <main style={{ minHeight: '100vh', background: '#FAF7F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ background: '#fff', borderRadius: '16px', border: '0.5px solid #E8E0D4', padding: '2.5rem', width: '100%', maxWidth: '400px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '8px' }}>
-          <img src="/icon-192.png" alt="공들여" style={{ width: '28px', height: '28px', borderRadius: '6px' }} />
-          <h1 style={{ fontSize: '22px', fontWeight: '500', color: '#4A3728', margin: 0 }}>공들여</h1>
+          <img src="/icon-192.png" alt="공로그" style={{ width: '28px', height: '28px', borderRadius: '6px' }} />
+          <h1 style={{ fontSize: '22px', fontWeight: '500', color: '#4A3728', margin: 0 }}>공로그</h1>
         </div>
         <p style={{ fontSize: '14px', color: '#9A8A78', textAlign: 'center', marginBottom: '2rem' }}>
           {showOtp ? '이메일로 받은 인증번호를 입력하세요' : isSignUp ? '계정을 만들어요' : '다시 만나서 반가워요'}

@@ -34,7 +34,7 @@ export default function Subscribe() {
       <Nav />
 
       <section style={{ maxWidth: '500px', margin: '0 auto', padding: '3rem 2rem', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '28px', fontWeight: '500', color: '#4A3728', marginBottom: '8px' }}>공들여 프리미엄</h1>
+        <h1 style={{ fontSize: '28px', fontWeight: '500', color: '#4A3728', marginBottom: '8px' }}>공로그 프리미엄</h1>
         <p style={{ fontSize: '15px', color: '#9A8A78', marginBottom: '2.5rem', lineHeight: '1.7' }}>
           AI가 학습을 분석하고, 맞춤 리포트를 제공해요
         </p>

@@ -42,7 +42,7 @@ export default function Home() {
 
       <section style={{ padding: '3.5rem 2rem 2rem', textAlign: 'center' }}>
         <h1 style={{ fontSize: '34px', fontWeight: '500', color: '#4A3728', marginBottom: '12px', lineHeight: '1.4' }}>
-          {user && nickname ? `${nickname}님,` : '매일 조금씩,'}<br />공들여 쌓아가요
+          {user && nickname ? `${nickname}님,` : '매일 조금씩,'}<br />공로그 쌓아가요
         </h1>
         <p style={{ fontSize: '16px', color: '#9A8A78', marginBottom: '28px', lineHeight: '1.7' }}>
           오늘의 목표를 세우고, 함께 인증하고,<br />성장을 눈으로 확인하세요.

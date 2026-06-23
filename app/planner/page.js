@@ -207,7 +207,7 @@ export default function Planner() {
     const canvas = await getCardCanvas()
     if (!canvas) return
     const link = document.createElement('a')
-    link.download = `공들여_${selectedDate}.png`
+    link.download = `공로그_${selectedDate}.png`
     link.href = canvas.toDataURL('image/png')
     link.click()
   }
@@ -509,7 +509,7 @@ export default function Planner() {
                 {/* 명언 + 통계 */}
                 <div style={{ padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '10px', borderBottom: '1.5px solid #E8E0D4' }}>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '10px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '4px' }}>오늘도 공들여</div>
+                    <div style={{ fontSize: '10px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '4px' }}>오늘도 공로그</div>
                     <div style={{ fontSize: '15px', fontWeight: '600', color: '#4A3728', lineHeight: '1.5', wordBreak: 'keep-all', overflowWrap: 'break-word' }}>{exportData.quote}</div>
                   </div>
                   <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
@@ -630,7 +630,7 @@ export default function Planner() {
 
                 {/* 하단 */}
                 <div style={{ padding: '6px 18px 10px', textAlign: 'right' }}>
-                  <span style={{ fontSize: '12px', fontWeight: '700', color: '#C9A882', letterSpacing: '1px' }}>공들여</span>
+                  <span style={{ fontSize: '12px', fontWeight: '700', color: '#C9A882', letterSpacing: '1px' }}>공로그</span>
                 </div>
               </div>
             </div>

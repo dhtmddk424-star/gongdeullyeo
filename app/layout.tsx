@@ -14,13 +14,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "공들여",
-  description: "매일 조금씩, 공들여 쌓아가요",
+  title: "공로그",
+  description: "매일 조금씩, 공로그 쌓아가요",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "공들여",
+    title: "공로그",
   },
 };
 

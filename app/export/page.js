@@ -64,7 +64,7 @@ export default function ExportCard() {
     ctx.fillStyle = '#4A3728'
     ctx.font = 'bold 48px sans-serif'
     ctx.textAlign = 'center'
-    ctx.fillText('공들여 📖', w / 2, 140)
+    ctx.fillText('공로그 📖', w / 2, 140)
 
     const dateObj = new Date(selectedDate + 'T00:00:00')
     const dateStr = dateObj.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' })
@@ -163,7 +163,7 @@ export default function ExportCard() {
   const download = () => {
     const canvas = canvasRef.current
     const link = document.createElement('a')
-    link.download = `공들여_${selectedDate}.png`
+    link.download = `공로그_${selectedDate}.png`
     link.href = canvas.toDataURL('image/png')
     link.click()
   }

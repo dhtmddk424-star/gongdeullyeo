@@ -35,8 +35,8 @@ export default function Nav() {
   return (
     <nav style={{ background: '#FAF7F2', borderBottom: '0.5px solid #E8E0D4', padding: '0 1.5rem', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => router.push('/')}>
-        <img src="/icon-192.png" alt="공들여" style={{ width: '28px', height: '28px', borderRadius: '6px' }} />
-        <span style={{ fontSize: '17px', fontWeight: '500', color: '#6B5B45' }}>공들여</span>
+        <img src="/icon-192.png" alt="공로그" style={{ width: '28px', height: '28px', borderRadius: '6px' }} />
+        <span style={{ fontSize: '17px', fontWeight: '500', color: '#6B5B45' }}>공로그</span>
       </div>
       <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
         {links.map(l => (
