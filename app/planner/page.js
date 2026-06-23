@@ -427,15 +427,14 @@ export default function Planner() {
         const hours = Array.from({ length: 19 }, (_, i) => (i + 7) % 24)
         const sessionSlots = {}
         sessions.forEach(s => {
-          const startH = new Date(s.created_at).getHours()
-          const startM = new Date(s.created_at).getMinutes()
-          const dur = s.duration_minutes
+          const endTime = new Date(s.created_at)
+          const startTime = new Date(endTime.getTime() - s.duration_minutes * 60000)
           const sub = subjects.find(sb => sb.name === s.subject)
           const color = sub?.color || '#C9A882'
-          for (let m = 0; m < dur; m += 5) {
-            const totalMin = startM + m
-            const h = (startH + Math.floor(totalMin / 60)) % 24
-            const slot = Math.floor((totalMin % 60) / 5)
+          for (let m = 0; m < s.duration_minutes; m += 5) {
+            const t = new Date(startTime.getTime() + m * 60000)
+            const h = t.getHours()
+            const slot = Math.floor(t.getMinutes() / 5)
             if (!sessionSlots[h]) sessionSlots[h] = {}
             sessionSlots[h][slot] = { subject: s.subject, color }
           }
@@ -540,23 +539,23 @@ export default function Planner() {
                 <div style={{ flex: 1, overflow: 'hidden' }}>
                   {exportData.design === 2 ? (
                     /* 디자인2: TASKS + TIMETABLE 2열 */
-                    <div style={{ display: 'flex', height: '100%' }}>
+                    <div style={{ display: 'flex', flex: 1 }}>
                       {/* 왼쪽: TASKS + 피드백 */}
-                      <div style={{ flex: 1, padding: '12px 14px 0', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                        <div style={{ fontSize: '10px', fontWeight: '700', color: '#9A8A78', marginBottom: '8px', letterSpacing: '2px' }}>TASKS</div>
-                        <div style={{ flex: 1, overflow: 'hidden' }}>
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ padding: '12px 14px', flex: 1, overflow: 'hidden' }}>
+                          <div style={{ fontSize: '11px', fontWeight: '700', color: '#9A8A78', marginBottom: '8px', letterSpacing: '2px' }}>TASKS</div>
                           {Object.entries(grouped).map(([name, { goals: gList, color }]) => (
-                            <div key={name} style={{ marginBottom: '8px' }}>
+                            <div key={name} style={{ marginBottom: '10px' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px', background: color + '15', borderLeft: `3px solid ${color}`, marginBottom: '4px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                   <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: color }} />
-                                  <span style={{ fontSize: '11px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
+                                  <span style={{ fontSize: '12px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
                                 </div>
-                                <span style={{ fontSize: '10px', fontWeight: '600', color }}>{gList.filter(g=>g.done).length}/{gList.length}</span>
+                                <span style={{ fontSize: '11px', fontWeight: '600', color }}>{gList.filter(g=>g.done).length}/{gList.length}</span>
                               </div>
                               {gList.map(g => (
-                                <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '2px 0', fontSize: '10px' }}>
-                                  <span style={{ width: '13px', height: '13px', borderRadius: '3px', background: g.done ? color : '#fff', border: g.done ? 'none' : `1px solid ${color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', color: '#fff', flexShrink: 0 }}>{g.done && '✓'}</span>
+                                <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '3px 0', fontSize: '11px' }}>
+                                  <span style={{ width: '14px', height: '14px', borderRadius: '3px', background: g.done ? color : '#fff', border: g.done ? 'none' : `1px solid ${color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#fff', flexShrink: 0 }}>{g.done && '✓'}</span>
                                   <span style={{ color: g.done ? '#C4B8A8' : '#4A3728', textDecoration: g.done ? 'line-through' : 'none' }}>{g.text}</span>
                                 </div>
                               ))}
@@ -564,17 +563,17 @@ export default function Planner() {
                           ))}
                         </div>
                         {exportData.showFeedback && feedback && (
-                          <div style={{ paddingTop: '8px', paddingBottom: '10px', marginTop: '4px' }}>
-                            <div style={{ fontSize: '9px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '3px' }}>오늘의 피드백</div>
-                            <div style={{ fontSize: '10px', color: '#4A3728', lineHeight: '1.5', fontStyle: 'italic' }}>"{feedback}"</div>
+                          <div style={{ borderTop: '1px solid #E8E0D4', padding: '10px 14px 12px' }}>
+                            <div style={{ fontSize: '11px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '4px' }}>오늘의 피드백</div>
+                            <div style={{ fontSize: '12px', color: '#4A3728', lineHeight: '1.6', fontStyle: 'italic' }}>"{feedback}"</div>
                           </div>
                         )}
                       </div>
-                      {/* 세로 구분선 (height 100%) */}
-                      <div style={{ width: '1px', background: '#E8E0D4', flexShrink: 0 }} />
-                      {/* 오른쪽: TIMETABLE 7~1시 */}
-                      <div style={{ width: '110px', padding: '12px 10px 0', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ fontSize: '10px', fontWeight: '700', color: '#9A8A78', marginBottom: '6px', letterSpacing: '2px' }}>TIME TABLE</div>
+                      {/* 세로 구분선 - 전체 높이 */}
+                      <div style={{ width: '1px', background: '#E8E0D4', alignSelf: 'stretch' }} />
+                      {/* 오른쪽: TIMETABLE */}
+                      <div style={{ width: '110px', flexShrink: 0, display: 'flex', flexDirection: 'column', padding: '12px 10px' }}>
+                        <div style={{ fontSize: '11px', fontWeight: '700', color: '#9A8A78', marginBottom: '6px', letterSpacing: '2px' }}>TIME TABLE</div>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1px' }}>
                         {Array.from({ length: 19 }, (_, i) => (i + 7) % 24).map(h => {
                           const slots = sessionSlots[h] || {}
@@ -583,7 +582,7 @@ export default function Planner() {
                           const fillPct = Math.round((filledCount / 12) * 100)
                           return (
                             <div key={h} style={{ display: 'flex', alignItems: 'center', gap: '3px', flex: 1 }}>
-                              <span style={{ width: '14px', color: '#C4B8A8', textAlign: 'right', fontSize: '8px', flexShrink: 0 }}>{String(h).padStart(2, '0')}</span>
+                              <span style={{ width: '14px', color: '#C4B8A8', textAlign: 'right', fontSize: '9px', flexShrink: 0 }}>{String(h).padStart(2, '0')}</span>
                               <div style={{ flex: 1, height: '100%', borderRadius: '2px', background: '#F0EAE0', overflow: 'hidden', position: 'relative' }}>
                                 {fillPct > 0 && mainSlot && (
                                   <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${fillPct}%`, background: mainSlot.color, borderRadius: '2px', display: 'flex', alignItems: 'center', paddingLeft: '3px' }}>
