@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
+import { getToday } from '../../lib/today'
 import Nav from '../components/Nav'
 
 export default function Dashboard() {
@@ -62,7 +63,7 @@ export default function Dashboard() {
   }
 
   const fetchStreak = async (uid) => {
-    const today = new Date().toISOString().split('T')[0]
+    const today = getToday()
     const { data: todayData } = await supabase.from('streaks').select('id').eq('user_id', uid).eq('date', today)
     setTodayChecked(todayData && todayData.length > 0)
 
@@ -72,7 +73,7 @@ export default function Dashboard() {
     let count = 0
     const d = new Date()
     for (let i = 0; i < allStreaks.length; i++) {
-      const dateStr = d.toISOString().split('T')[0]
+      const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
       if (allStreaks.find(s => s.date === dateStr)) {
         count++
         d.setDate(d.getDate() - 1)
@@ -83,14 +84,14 @@ export default function Dashboard() {
 
   const checkIn = async () => {
     if (!user || todayChecked) return
-    const today = new Date().toISOString().split('T')[0]
+    const today = getToday()
     await supabase.from('streaks').insert({ user_id: user.id, date: today })
     setTodayChecked(true)
     fetchStreak(user.id)
   }
 
   const fetchSessions = async (uid) => {
-    const today = new Date().toISOString().split('T')[0]
+    const today = getToday()
     const { data } = await supabase.from('study_sessions').select('*').eq('user_id', uid).eq('date', today).order('created_at', { ascending: false })
     setSessions(data || [])
   }
@@ -109,7 +110,7 @@ export default function Dashboard() {
     for (let i = 0; i < 7; i++) {
       const d = new Date(monday)
       d.setDate(monday.getDate() + i)
-      dates.push(d.toISOString().split('T')[0])
+      dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`)
     }
     const { data } = await supabase.from('study_sessions').select('date, duration_minutes').eq('user_id', uid).in('date', dates)
     const stats = dates.map(date => {

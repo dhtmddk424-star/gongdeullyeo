@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 import { getTodayQuote } from '../../lib/quotes'
+import { getToday } from '../../lib/today'
 import Nav from '../components/Nav'
 
 export default function Planner() {
@@ -13,7 +14,7 @@ export default function Planner() {
   const [user, setUser] = useState(null)
   const [nickname, setNickname] = useState('')
   const [loading, setLoading] = useState(true)
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
+  const [selectedDate, setSelectedDate] = useState(getToday())
   const [feedback, setFeedback] = useState('')
   const [savedFeedback, setSavedFeedback] = useState(false)
   const [showCalendar, setShowCalendar] = useState(false)
@@ -42,7 +43,7 @@ export default function Planner() {
       setSubjects(subs || [])
     }
     getUser()
-    setSelectedDate(new Date().toISOString().split('T')[0])
+    setSelectedDate(getToday())
   }, [router])
 
   useEffect(() => {
@@ -108,9 +109,9 @@ export default function Planner() {
     setGoals(updated)
     // #7: 하나라도 체크하면 자동 출석
     if (newDone && user) {
-      const today = new Date().toISOString().split('T')[0]
-      if (selectedDate === today) {
-        await supabase.from('streaks').upsert({ user_id: user.id, date: today }, { onConflict: 'user_id,date' })
+      const td = getToday()
+      if (selectedDate === td) {
+        await supabase.from('streaks').upsert({ user_id: user.id, date: td }, { onConflict: 'user_id,date' })
       }
     }
   }
@@ -229,7 +230,7 @@ export default function Planner() {
     }, 'image/png')
   }
 
-  const isToday = selectedDate === new Date().toISOString().split('T')[0]
+  const isToday = selectedDate === getToday()
   const doneCount = goals.filter(g => g.done).length
   const dateDisplay = new Date(selectedDate + 'T00:00:00').toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })
 
@@ -300,7 +301,7 @@ export default function Planner() {
           <span onClick={() => changeDate(-1)} style={{ fontSize: '18px', color: '#9A8A78', cursor: 'pointer', padding: '4px 8px' }}>◀</span>
           <span style={{ fontSize: '14px', color: '#9A8A78', flex: 1, textAlign: 'center' }}>{dateDisplay}</span>
           <span onClick={() => changeDate(1)} style={{ fontSize: '18px', color: '#9A8A78', cursor: 'pointer', padding: '4px 8px' }}>▶</span>
-          {!isToday && <span onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])} style={{ fontSize: '12px', color: '#C9A882', cursor: 'pointer', border: '0.5px solid #C9A882', borderRadius: '12px', padding: '4px 10px' }}>오늘</span>}
+          {!isToday && <span onClick={() => setSelectedDate(getToday())} style={{ fontSize: '12px', color: '#C9A882', cursor: 'pointer', border: '0.5px solid #C9A882', borderRadius: '12px', padding: '4px 10px' }}>오늘</span>}
         </div>
 
         {/* 진행도 */}
