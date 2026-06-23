@@ -77,7 +77,8 @@ export async function POST(req) {
     const content = message.content[0].text
     let parsed
     try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/)
+      const clean = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim()
+      const jsonMatch = clean.match(/\{[\s\S]*\}/)
       parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : null
     } catch {
       parsed = null
