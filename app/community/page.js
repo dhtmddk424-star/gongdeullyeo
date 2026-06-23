@@ -28,6 +28,8 @@ function Community() {
   const [annImage, setAnnImage] = useState(null)
   const [annImagePreview, setAnnImagePreview] = useState(null)
   const [editingAnn, setEditingAnn] = useState(null)
+  const [expandedAnns, setExpandedAnns] = useState(new Set())
+  const [menuOpen, setMenuOpen] = useState(null)
   const annFileRef = useRef()
   const [tags, setTags] = useState([])
   const [filterTag, setFilterTag] = useState('')
@@ -85,9 +87,6 @@ function Community() {
     setAnnouncements(announcements.filter(a => a.id !== id))
   }
 
-  const startEditAnn = (ann) => {
-    setEditingAnn(ann); setAnnContent(ann.content); setAnnImagePreview(ann.image_url); setShowAnnForm(true)
-  }
 
   const addTag = () => {
     const t = tagInput.trim().replace(/^#/, '')
@@ -234,24 +233,47 @@ function Community() {
         {/* 공지글 */}
         {announcements.length > 0 && (
           <div style={{ marginBottom: '16px' }}>
-            {announcements.map(ann => (
+            {announcements.map(ann => {
+              const isExpanded = expandedAnns.has(ann.id)
+              const isEditing = editingAnn?.id === ann.id
+              const lines = ann.content.split('\n')
+              const isLong = lines.length > 3 || ann.content.length > 150
+              const preview = lines.slice(0, 3).join('\n').slice(0, 150)
+              return (
               <div key={ann.id} style={{ background: '#FFF8EE', borderRadius: '12px', border: '1px solid #E8D9C8', padding: '1rem 1.25rem', marginBottom: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span style={{ fontSize: '11px', background: '#C9A882', color: '#fff', padding: '2px 8px', borderRadius: '8px', fontWeight: '600' }}>공지</span>
                     <span style={{ fontSize: '11px', color: '#C4B8A8' }}>{new Date(ann.updated_at || ann.created_at).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
-                  {isAdmin && (
+                  {isAdmin && !isEditing && (
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <span onClick={() => startEditAnn(ann)} style={{ fontSize: '12px', color: '#C9A882', cursor: 'pointer' }}>수정</span>
+                      <span onClick={() => { setEditingAnn(ann); setAnnContent(ann.content) }} style={{ fontSize: '12px', color: '#C9A882', cursor: 'pointer' }}>수정</span>
                       <span onClick={() => deleteAnnouncement(ann.id)} style={{ fontSize: '14px', color: '#D4C8B8', cursor: 'pointer' }}>×</span>
                     </div>
                   )}
                 </div>
-                <p style={{ fontSize: '14px', color: '#4A3728', lineHeight: '1.6', margin: 0, whiteSpace: 'pre-wrap' }}>{ann.content}</p>
-                {ann.image_url && <img src={ann.image_url} alt="공지 이미지" style={{ marginTop: '10px', maxWidth: '100%', borderRadius: '8px', display: 'block' }} />}
+                {isEditing ? (
+                  <div>
+                    <textarea value={annContent} onChange={(e) => setAnnContent(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '13px', outline: 'none', color: '#4A3728', background: '#fff', resize: 'vertical', minHeight: '80px', boxSizing: 'border-box', fontFamily: 'sans-serif' }} />
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '8px' }}>
+                      <button onClick={() => setEditingAnn(null)} style={{ background: 'transparent', color: '#C4B8A8', border: 'none', fontSize: '12px', cursor: 'pointer' }}>취소</button>
+                      <button onClick={saveAnnouncement} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '14px', padding: '5px 14px', fontSize: '12px', cursor: 'pointer' }}>저장</button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <p style={{ fontSize: '14px', color: '#4A3728', lineHeight: '1.6', margin: 0, whiteSpace: 'pre-wrap' }}>{isExpanded || !isLong ? ann.content : preview + '...'}</p>
+                    {isLong && (
+                      <span onClick={() => { const s = new Set(expandedAnns); isExpanded ? s.delete(ann.id) : s.add(ann.id); setExpandedAnns(s) }} style={{ fontSize: '12px', color: '#C9A882', cursor: 'pointer', marginTop: '4px', display: 'inline-block' }}>
+                        {isExpanded ? '접기' : '더보기'}
+                      </span>
+                    )}
+                  </>
+                )}
+                {ann.image_url && !isEditing && <img src={ann.image_url} alt="공지 이미지" style={{ marginTop: '10px', maxWidth: '100%', borderRadius: '8px', display: 'block' }} />}
               </div>
-            ))}
+            )})}
           </div>
         )}
 
@@ -324,13 +346,24 @@ function Community() {
                   <span style={{ fontSize: '13px', color: '#6B5B45', fontWeight: '500' }}>{nicknames[post.user_id] || '공부중'}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {post.pinned && !isAdmin && <span style={{ fontSize: '11px' }}>📌</span>}
+                  {post.pinned && <span style={{ fontSize: '10px', color: '#C9A882', border: '0.5px solid #C9A882', borderRadius: '6px', padding: '1px 5px' }}>고정</span>}
                   <span style={{ fontSize: '12px', color: '#C4B8A8' }} title={new Date(post.created_at).toLocaleString('ko-KR')}>{timeAgo(post.created_at)}</span>
-                  {isAdmin && (
-                    <span onClick={() => togglePin(post.id, post.pinned)} style={{ fontSize: '12px', cursor: 'pointer', opacity: post.pinned ? 1 : 0.4 }} title={post.pinned ? '고정 해제' : '고정'}>📌</span>
-                  )}
                   {(user?.id === post.user_id || isAdmin) && (
-                    <span onClick={() => deletePost(post.id)} style={{ fontSize: '16px', color: '#D4C8B8', cursor: 'pointer' }}>×</span>
+                    <div style={{ position: 'relative' }}>
+                      <span onClick={() => setMenuOpen(menuOpen === post.id ? null : post.id)} style={{ fontSize: '16px', color: '#C4B8A8', cursor: 'pointer', padding: '0 4px' }}>⋮</span>
+                      {menuOpen === post.id && (
+                        <div style={{ position: 'absolute', right: 0, top: '24px', background: '#fff', borderRadius: '8px', border: '0.5px solid #E8E0D4', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', zIndex: 10, minWidth: '100px', overflow: 'hidden' }}>
+                          {isAdmin && (
+                            <div onClick={() => { togglePin(post.id, post.pinned); setMenuOpen(null) }} style={{ padding: '10px 14px', fontSize: '13px', color: '#6B5B45', cursor: 'pointer', borderBottom: '0.5px solid #F0EAE0' }}>
+                              {post.pinned ? '고정 해제' : '📌 고정'}
+                            </div>
+                          )}
+                          <div onClick={() => { deletePost(post.id); setMenuOpen(null) }} style={{ padding: '10px 14px', fontSize: '13px', color: '#C44', cursor: 'pointer' }}>
+                            삭제
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
