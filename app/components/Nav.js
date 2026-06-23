@@ -59,14 +59,11 @@ export default function Nav() {
               onClick={() => router.push('/profile')}
               style={{
                 width: '30px', height: '30px', borderRadius: '50%',
-                background: avatarUrl ? `url(${avatarUrl}) center/cover` : '#E8D9C8',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: `url(${avatarUrl || '/default-avatar.png'}) center/cover`,
                 cursor: 'pointer', border: '1.5px solid #E8E0D4',
-                fontSize: '13px', color: '#6B5B45', fontWeight: '500',
                 overflow: 'hidden',
               }}
             >
-              {!avatarUrl && (nickname?.slice(0, 1) || '?')}
             </div>
             <button onClick={async () => { await supabase.auth.signOut(); router.push('/') }} style={{ background: 'transparent', color: '#9A8A78', border: '0.5px solid #D4C8B8', borderRadius: '20px', padding: '5px 14px', fontSize: '12px', cursor: 'pointer' }}>로그아웃</button>
           </div>

@@ -63,14 +63,11 @@ export default function Profile() {
             onClick={() => fileRef.current.click()}
             style={{
               width: '80px', height: '80px', borderRadius: '50%',
-              background: avatarUrl ? `url(${avatarUrl}) center/cover` : '#E8D9C8',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: `url(${avatarUrl || '/default-avatar.png'}) center/cover`,
               cursor: 'pointer', border: '2px solid #E8E0D4',
-              fontSize: '28px', color: '#6B5B45', fontWeight: '500',
               overflow: 'hidden', position: 'relative',
             }}
           >
-            {!avatarUrl && (nickname?.slice(0, 1) || '?')}
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.3)', color: '#fff', fontSize: '10px', textAlign: 'center', padding: '2px 0' }}>변경</div>
           </div>
           <input ref={fileRef} type="file" accept="image/*" onChange={uploadAvatar} style={{ display: 'none' }} />

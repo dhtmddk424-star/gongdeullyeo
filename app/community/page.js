@@ -320,9 +320,7 @@ function Community() {
             <div key={post.id} style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1.25rem', marginBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#E8D9C8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '500', color: '#6B5B45' }}>
-                    {(nicknames[post.user_id] || '??').slice(0, 1)}
-                  </div>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'url(/default-avatar.png) center/cover', overflow: 'hidden' }} />
                   <span style={{ fontSize: '13px', color: '#6B5B45', fontWeight: '500' }}>{nicknames[post.user_id] || '공부중'}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
