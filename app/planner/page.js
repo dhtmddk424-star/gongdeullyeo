@@ -176,7 +176,7 @@ export default function Planner() {
     }
     setExportData({
       quote: q.text,
-      studyTime: totalMin > 0 ? `${Math.floor(totalMin / 60)}h ${totalMin % 60}m` : '0h 0m',
+      studyTime: totalMin >= 60 ? `${Math.floor(totalMin / 60)}h ${totalMin % 60}m` : `${totalMin}m`,
       showTime: true,
       showDday: ddays.length > 0,
       selectedDday: ddays.length > 0 ? ddays[0] : null,
@@ -424,7 +424,7 @@ export default function Planner() {
           if (!grouped[key]) grouped[key] = { goals: [], color: sub?.color || '#9A8A78' }
           grouped[key].goals.push(g)
         })
-        const hours = Array.from({ length: 17 }, (_, i) => i + 6)
+        const hours = Array.from({ length: 19 }, (_, i) => (i + 7) % 24)
         const sessionsByHour = {}
         sessions.forEach(s => {
           const h = new Date(s.created_at).getHours()
@@ -492,117 +492,129 @@ export default function Planner() {
               </div>
             </div>
 
-            {/* 미리보기 카드 */}
-            <div id="card-preview" style={{ background: '#3A2E22', borderRadius: '16px', padding: '20px', fontFamily: 'sans-serif' }}>
-              <div style={{ background: '#FAF7F2', borderRadius: '12px', overflow: 'hidden' }}>
-                {/* 헤더 */}
-                <div style={{ padding: '16px 20px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ fontSize: '14px', color: '#4A3728' }}>{dateStr}</div>
-                  {exportData.streakCount > 0 && <div style={{ fontSize: '13px', color: '#C9A882', fontWeight: '600' }}>🔥 {exportData.streakCount}일 연속</div>}
+            {/* 미리보기 카드 (4:5 비율) */}
+            <div id="card-preview" style={{ background: '#3A2E22', borderRadius: '16px', padding: '16px', fontFamily: 'sans-serif', aspectRatio: '4/5' }}>
+              <div style={{ background: '#FAF7F2', borderRadius: '12px', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                {/* 헤더 바 */}
+                <div style={{ background: '#4A3728', padding: '12px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ color: '#FAF7F2', fontSize: '13px', fontWeight: '500' }}>{dateStr}</div>
+                  {exportData.streakCount > 0 && <div style={{ color: '#C9A882', fontSize: '12px', fontWeight: '600' }}>🔥 {exportData.streakCount}일 연속</div>}
                 </div>
 
-                {/* 명언 + 통계 박스 */}
-                <div style={{ padding: '4px 20px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '12px' }}>
+                {/* 명언 + 통계 */}
+                <div style={{ padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '10px', borderBottom: '1.5px solid #E8E0D4' }}>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '11px', color: '#9A8A78', marginBottom: '4px' }}>오늘도 공들여</div>
-                    <div style={{ fontSize: '17px', fontWeight: '600', color: '#4A3728', lineHeight: '1.4' }}>{exportData.quote}</div>
+                    <div style={{ fontSize: '10px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '4px' }}>오늘도 공들여</div>
+                    <div style={{ fontSize: '15px', fontWeight: '600', color: '#4A3728', lineHeight: '1.5' }}>{exportData.quote}</div>
                   </div>
-                  <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                  <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
                     {exportData.showTime && (
-                      <div style={{ background: '#fff', border: '0.5px solid #E8E0D4', borderRadius: '8px', padding: '6px 10px', textAlign: 'center' }}>
-                        <div style={{ fontSize: '9px', color: '#9A8A78' }}>공부 시간</div>
-                        <div style={{ fontSize: '13px', fontWeight: '600', color: '#4A3728' }}>{exportData.studyTime}</div>
+                      <div style={{ background: '#F5F0E8', borderRadius: '8px', padding: '6px 10px', textAlign: 'center', minWidth: '50px' }}>
+                        <div style={{ fontSize: '8px', color: '#9A8A78', letterSpacing: '0.5px' }}>공부 시간</div>
+                        <div style={{ fontSize: '14px', fontWeight: '700', color: '#4A3728' }}>{exportData.studyTime}</div>
                       </div>
                     )}
                     {exportData.showRate && (
-                      <div style={{ background: '#fff', border: '0.5px solid #E8E0D4', borderRadius: '8px', padding: '6px 10px', textAlign: 'center' }}>
-                        <div style={{ fontSize: '9px', color: '#9A8A78' }}>달성률</div>
-                        <div style={{ fontSize: '13px', fontWeight: '600', color: '#4A3728' }}>{pct}%</div>
+                      <div style={{ background: '#F5F0E8', borderRadius: '8px', padding: '6px 10px', textAlign: 'center', minWidth: '50px' }}>
+                        <div style={{ fontSize: '8px', color: '#9A8A78', letterSpacing: '0.5px' }}>달성률</div>
+                        <div style={{ fontSize: '14px', fontWeight: '700', color: '#4A3728' }}>{pct}%</div>
                       </div>
                     )}
                     {exportData.showDday && exportData.selectedDday && (
-                      <div style={{ background: '#4A3728', borderRadius: '8px', padding: '6px 10px', textAlign: 'center' }}>
-                        <div style={{ fontSize: '9px', color: '#C9A882' }}>D-DAY</div>
-                        <div style={{ fontSize: '15px', fontWeight: '700', color: '#fff' }}>{getDdayText(exportData.selectedDday)}</div>
-                        <div style={{ fontSize: '8px', color: '#C9A882' }}>{exportData.selectedDday.title}</div>
+                      <div style={{ background: '#4A3728', borderRadius: '8px', padding: '6px 10px', textAlign: 'center', minWidth: '50px' }}>
+                        <div style={{ fontSize: '8px', color: '#C9A882', letterSpacing: '0.5px' }}>D-DAY</div>
+                        <div style={{ fontSize: '16px', fontWeight: '800', color: '#fff' }}>{getDdayText(exportData.selectedDday)}</div>
+                        <div style={{ fontSize: '7px', color: '#C9A882' }}>{exportData.selectedDday.title}</div>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* 디자인2: 2열 - TASKS + TIMETABLE */}
-                {exportData.design === 2 ? (
-                  <div style={{ display: 'flex', padding: '0 20px 16px', gap: '16px' }}>
-                    {/* TASKS */}
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '11px', fontWeight: '600', color: '#9A8A78', marginBottom: '8px', letterSpacing: '1px' }}>TASKS</div>
-                      {Object.entries(grouped).map(([name, { goals: gList, color }]) => (
-                        <div key={name} style={{ marginBottom: '10px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: color }} />
-                              <span style={{ fontSize: '12px', fontWeight: '600', color: '#4A3728' }}>{name}</span>
-                            </div>
-                            <span style={{ fontSize: '10px', color: '#9A8A78' }}>{gList.filter(g=>g.done).length}/{gList.length}</span>
-                          </div>
-                          {gList.map(g => (
-                            <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '2px 0', fontSize: '11px' }}>
-                              <span style={{ width: '14px', height: '14px', borderRadius: '3px', background: g.done ? '#C9A882' : '#fff', border: g.done ? 'none' : '1px solid #D4C8B8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#fff', flexShrink: 0 }}>{g.done && '✓'}</span>
-                              <span style={{ color: g.done ? '#C4B8A8' : '#4A3728', textDecoration: g.done ? 'line-through' : 'none' }}>{g.text}</span>
+                {/* 본문 */}
+                <div style={{ flex: 1, overflow: 'hidden' }}>
+                  {exportData.design === 2 ? (
+                    /* 디자인2: TASKS + TIMETABLE 2열 */
+                    <div style={{ display: 'flex', height: '100%' }}>
+                      {/* 왼쪽: TASKS + 피드백 */}
+                      <div style={{ flex: 1, padding: '12px 14px', borderRight: '1px solid #E8E0D4', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                        <div style={{ fontSize: '10px', fontWeight: '700', color: '#9A8A78', marginBottom: '8px', letterSpacing: '2px' }}>TASKS</div>
+                        <div style={{ flex: 1, overflow: 'hidden' }}>
+                          {Object.entries(grouped).map(([name, { goals: gList, color }]) => (
+                            <div key={name} style={{ marginBottom: '8px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px', background: color + '15', borderRadius: '4px', marginBottom: '4px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: color }} />
+                                  <span style={{ fontSize: '11px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
+                                </div>
+                                <span style={{ fontSize: '10px', fontWeight: '600', color }}>{gList.filter(g=>g.done).length}/{gList.length}</span>
+                              </div>
+                              {gList.map(g => (
+                                <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '2px 0', fontSize: '10px' }}>
+                                  <span style={{ width: '13px', height: '13px', borderRadius: '3px', background: g.done ? color : '#fff', border: g.done ? 'none' : `1px solid ${color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', color: '#fff', flexShrink: 0 }}>{g.done && '✓'}</span>
+                                  <span style={{ color: g.done ? '#C4B8A8' : '#4A3728', textDecoration: g.done ? 'line-through' : 'none' }}>{g.text}</span>
+                                </div>
+                              ))}
                             </div>
                           ))}
                         </div>
-                      ))}
-                    </div>
-                    {/* TIMETABLE */}
-                    <div style={{ width: '120px', flexShrink: 0 }}>
-                      <div style={{ fontSize: '11px', fontWeight: '600', color: '#9A8A78', marginBottom: '8px', letterSpacing: '1px' }}>TIME TABLE</div>
-                      {hours.map(h => {
-                        const s = sessionsByHour[h]
-                        return (
-                          <div key={h} style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '20px', fontSize: '10px' }}>
-                            <span style={{ width: '18px', color: '#C4B8A8', textAlign: 'right' }}>{h}</span>
-                            <div style={{ flex: 1, height: '16px', borderRadius: '3px', background: s ? s.color : '#F0EAE0', display: 'flex', alignItems: 'center', paddingLeft: '4px' }}>
-                              {s && <span style={{ fontSize: '8px', color: '#fff' }}>{s.subject}</span>}
+                        {exportData.showFeedback && feedback && (
+                          <div style={{ borderTop: '1px solid #E8E0D4', paddingTop: '8px', marginTop: '6px' }}>
+                            <div style={{ fontSize: '9px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '3px' }}>오늘의 피드백</div>
+                            <div style={{ fontSize: '10px', color: '#4A3728', lineHeight: '1.5', fontStyle: 'italic' }}>"{feedback}"</div>
+                          </div>
+                        )}
+                      </div>
+                      {/* 오른쪽: TIMETABLE 7~25(1시) */}
+                      <div style={{ width: '100px', padding: '12px 10px', flexShrink: 0 }}>
+                        <div style={{ fontSize: '10px', fontWeight: '700', color: '#9A8A78', marginBottom: '8px', letterSpacing: '2px' }}>TIME TABLE</div>
+                        {Array.from({ length: 19 }, (_, i) => (i + 7) % 24).map(h => {
+                          const s = sessionsByHour[h]
+                          return (
+                            <div key={h} style={{ display: 'flex', alignItems: 'center', gap: '4px', height: '16px', fontSize: '9px' }}>
+                              <span style={{ width: '16px', color: '#C4B8A8', textAlign: 'right', fontSize: '8px' }}>{String(h).padStart(2, '0')}</span>
+                              <div style={{ flex: 1, height: '13px', borderRadius: '2px', background: s ? s.color : '#F0EAE0', display: 'flex', alignItems: 'center', paddingLeft: '3px' }}>
+                                {s && <span style={{ fontSize: '7px', color: '#fff', fontWeight: '500' }}>{s.subject}</span>}
+                              </div>
                             </div>
-                          </div>
-                        )
-                      })}
+                          )
+                        })}
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  /* 디자인1: 과목별 체크리스트 */
-                  <div style={{ padding: '0 20px 16px' }}>
-                    {Object.entries(grouped).map(([name, { goals: gList, color }]) => (
-                      <div key={name} style={{ marginBottom: '10px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #E8E0D4', marginBottom: '5px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: color }} />
-                            <span style={{ fontSize: '13px', fontWeight: '600', color: '#4A3728' }}>{name}</span>
-                          </div>
-                          <span style={{ fontSize: '12px', color: '#9A8A78' }}>{gList.filter(g=>g.done).length}/{gList.length}</span>
-                        </div>
-                        {gList.map(g => (
-                          <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '3px 0', fontSize: '12px' }}>
-                            <span style={{ width: '16px', height: '16px', borderRadius: '4px', background: g.done ? '#C9A882' : '#fff', border: g.done ? 'none' : '1px solid #D4C8B8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#fff', flexShrink: 0 }}>{g.done && '✓'}</span>
-                            <span style={{ color: g.done ? '#C4B8A8' : '#4A3728', textDecoration: g.done ? 'line-through' : 'none', flex: 1 }}>{g.text}</span>
+                  ) : (
+                    /* 디자인1: 과목별 체크리스트 */
+                    <div style={{ padding: '12px 18px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ flex: 1 }}>
+                        {Object.entries(grouped).map(([name, { goals: gList, color }]) => (
+                          <div key={name} style={{ marginBottom: '10px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 10px', background: color + '18', borderRadius: '6px', marginBottom: '5px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: color }} />
+                                <span style={{ fontSize: '13px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
+                              </div>
+                              <span style={{ fontSize: '12px', fontWeight: '600', color }}>{gList.filter(g=>g.done).length}/{gList.length}</span>
+                            </div>
+                            {gList.map(g => (
+                              <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 4px', fontSize: '12px', borderBottom: '0.5px solid #F0EAE0' }}>
+                                <span style={{ width: '16px', height: '16px', borderRadius: '4px', background: g.done ? color : '#fff', border: g.done ? 'none' : `1.5px solid ${color}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#fff', flexShrink: 0 }}>{g.done && '✓'}</span>
+                                <span style={{ color: g.done ? '#C4B8A8' : '#4A3728', textDecoration: g.done ? 'line-through' : 'none', flex: 1 }}>{g.text}</span>
+                              </div>
+                            ))}
                           </div>
                         ))}
                       </div>
-                    ))}
-                  </div>
-                )}
+                      {exportData.showFeedback && feedback && (
+                        <div style={{ borderTop: '1.5px solid #E8E0D4', paddingTop: '10px', marginTop: '6px' }}>
+                          <div style={{ fontSize: '10px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '4px' }}>오늘의 피드백</div>
+                          <div style={{ fontSize: '12px', color: '#4A3728', lineHeight: '1.6', fontStyle: 'italic' }}>"{feedback}"</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
 
-                {/* 피드백 */}
-                {exportData.showFeedback && feedback && (
-                  <div style={{ padding: '10px 20px', borderTop: '0.5px solid #E8E0D4' }}>
-                    <div style={{ fontSize: '11px', color: '#9A8A78', marginBottom: '3px' }}>오늘의 피드백</div>
-                    <div style={{ fontSize: '12px', color: '#4A3728', lineHeight: '1.6', fontStyle: 'italic' }}>"{feedback}"</div>
-                  </div>
-                )}
-
-                <div style={{ padding: '8px 20px 12px', textAlign: 'right' }}>
-                  <span style={{ fontSize: '13px', fontWeight: '600', color: '#C9A882' }}>공들여</span>
+                {/* 하단 */}
+                <div style={{ padding: '8px 18px 10px', borderTop: '0.5px solid #E8E0D4', textAlign: 'right' }}>
+                  <span style={{ fontSize: '12px', fontWeight: '700', color: '#C9A882', letterSpacing: '1px' }}>공들여</span>
                 </div>
               </div>
             </div>
