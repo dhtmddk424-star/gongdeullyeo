@@ -1,17 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { NextResponse } from 'next/server'
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-
 export async function POST(req) {
   try {
     const formData = await req.formData()
     let text = formData.get('text') || ''
     const file = formData.get('file')
-
-    if (!process.env.ANTHROPIC_API_KEY) {
-      return NextResponse.json({ error: 'API 키가 설정되지 않았습니다.' }, { status: 400 })
-    }
 
     if (file && file.size > 0) {
       const bytes = await file.arrayBuffer()
@@ -29,6 +23,13 @@ export async function POST(req) {
     if (!text.trim()) {
       return NextResponse.json({ error: '내용이 비어있습니다.' }, { status: 400 })
     }
+
+    const apiKey = process.env.ANTHROPIC_API_KEY
+    if (!apiKey) {
+      return NextResponse.json({ error: 'API 키가 설정되지 않았습니다.' }, { status: 500 })
+    }
+
+    const client = new Anthropic({ apiKey })
 
     const message = await client.messages.create({
       model: 'claude-sonnet-4-20250514',
@@ -73,6 +74,7 @@ ${text}`
 
     return NextResponse.json({ result: parsed, raw: content })
   } catch (error) {
+    console.error('AI Parse Error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
