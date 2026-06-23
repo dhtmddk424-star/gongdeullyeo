@@ -22,6 +22,10 @@ export default function Planner() {
   const [showExport, setShowExport] = useState(false)
   const [exportData, setExportData] = useState({ quote: '', studyTime: '', showTime: true, selectedDday: null })
   const [sessions, setSessions] = useState([])
+  const [subjects, setSubjects] = useState([])
+  const [selectedSubject, setSelectedSubject] = useState(null)
+  const [showSubjectForm, setShowSubjectForm] = useState(false)
+  const [newSubjectName, setNewSubjectName] = useState('')
 
   useEffect(() => {
     const getUser = async () => {
@@ -32,6 +36,8 @@ export default function Planner() {
       if (p?.nickname) setNickname(p.nickname)
       const { data: dd } = await supabase.from('ddays').select('*').eq('user_id', user.id).order('target_date')
       setDdays(dd || [])
+      const { data: subs } = await supabase.from('subjects').select('*').eq('user_id', user.id).order('sort_order')
+      setSubjects(subs || [])
     }
     getUser()
   }, [router])
@@ -106,9 +112,25 @@ export default function Planner() {
     }
   }
 
+  const addSubject = async () => {
+    if (!newSubjectName.trim() || !user) return
+    const colors = ['#C9A882', '#8BA88E', '#7B9EBF', '#C4869B', '#B8A06B', '#9B8EC4', '#C47E5A']
+    const color = colors[subjects.length % colors.length]
+    const { data } = await supabase.from('subjects').insert({ user_id: user.id, name: newSubjectName.trim(), color, sort_order: subjects.length }).select()
+    if (data) setSubjects([...subjects, data[0]])
+    setNewSubjectName('')
+    setShowSubjectForm(false)
+  }
+
+  const deleteSubject = async (id) => {
+    await supabase.from('subjects').delete().eq('id', id)
+    setSubjects(subjects.filter(s => s.id !== id))
+    if (selectedSubject === id) setSelectedSubject(null)
+  }
+
   const addGoal = async () => {
     if (!newGoal.trim() || !user) return
-    const { data } = await supabase.from('goals').insert({ user_id: user.id, text: newGoal, done: false, date: selectedDate }).select()
+    const { data } = await supabase.from('goals').insert({ user_id: user.id, text: newGoal, done: false, date: selectedDate, subject_id: selectedSubject }).select()
     if (data) setGoals([...goals, data[0]])
     setNewGoal('')
   }
@@ -296,21 +318,50 @@ export default function Planner() {
           </div>
         </div>
 
+        {/* 과목 탭 */}
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <span onClick={() => setSelectedSubject(null)} style={{ fontSize: '12px', padding: '5px 12px', borderRadius: '14px', cursor: 'pointer', background: selectedSubject === null ? '#4A3728' : '#fff', color: selectedSubject === null ? '#fff' : '#9A8A78', border: '0.5px solid #E8E0D4' }}>전체</span>
+          {subjects.map(s => (
+            <span key={s.id} onClick={() => setSelectedSubject(selectedSubject === s.id ? null : s.id)} style={{ fontSize: '12px', padding: '5px 12px', borderRadius: '14px', cursor: 'pointer', background: selectedSubject === s.id ? s.color : '#fff', color: selectedSubject === s.id ? '#fff' : s.color, border: `1px solid ${s.color}`, position: 'relative' }}>
+              {s.name}
+              {selectedSubject === s.id && <span onClick={(e) => { e.stopPropagation(); deleteSubject(s.id) }} style={{ marginLeft: '6px', fontSize: '10px' }}>×</span>}
+            </span>
+          ))}
+          {showSubjectForm ? (
+            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+              <input value={newSubjectName} onChange={(e) => setNewSubjectName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addSubject()} placeholder="과목명" autoFocus style={{ width: '80px', padding: '5px 8px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '12px', outline: 'none', color: '#4A3728' }} />
+              <span onClick={addSubject} style={{ fontSize: '12px', color: '#C9A882', cursor: 'pointer' }}>추가</span>
+              <span onClick={() => { setShowSubjectForm(false); setNewSubjectName('') }} style={{ fontSize: '12px', color: '#C4B8A8', cursor: 'pointer' }}>취소</span>
+            </div>
+          ) : (
+            <span onClick={() => setShowSubjectForm(true)} style={{ fontSize: '14px', color: '#C9A882', cursor: 'pointer', width: '26px', height: '26px', borderRadius: '50%', border: '1px dashed #C9A882', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</span>
+          )}
+        </div>
+
         {/* 목표 */}
         <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1.25rem', marginBottom: '16px' }}>
-          {goals.length === 0 && <p style={{ fontSize: '14px', color: '#C4B8A8', textAlign: 'center', padding: '1rem 0' }}>목표를 추가해보세요!</p>}
-          {goals.map(goal => (
+          {goals.filter(g => !selectedSubject || g.subject_id === selectedSubject).length === 0 && <p style={{ fontSize: '14px', color: '#C4B8A8', textAlign: 'center', padding: '1rem 0' }}>목표를 추가해보세요!</p>}
+          {goals.filter(g => !selectedSubject || g.subject_id === selectedSubject).map(goal => (
             <div key={goal.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: '0.5px solid #F0EAE0' }}>
               <div onClick={() => toggleGoal(goal)} style={{ width: '20px', height: '20px', borderRadius: '6px', border: goal.done ? 'none' : '0.5px solid #D4C8B8', background: goal.done ? '#C9A882' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
                 {goal.done && <span style={{ color: '#fff', fontSize: '12px' }}>✓</span>}
               </div>
-              <span style={{ flex: 1, fontSize: '14px', color: goal.done ? '#C4B8A8' : '#4A3728', textDecoration: goal.done ? 'line-through' : 'none' }}>{goal.text}</span>
+              <div style={{ flex: 1 }}>
+                <span style={{ fontSize: '14px', color: goal.done ? '#C4B8A8' : '#4A3728', textDecoration: goal.done ? 'line-through' : 'none' }}>{goal.text}</span>
+                {goal.subject_id && (() => { const s = subjects.find(s => s.id === goal.subject_id); return s ? <span style={{ fontSize: '10px', color: s.color, marginLeft: '6px', border: `0.5px solid ${s.color}`, borderRadius: '6px', padding: '1px 5px' }}>{s.name}</span> : null })()}
+              </div>
               <span onClick={() => deleteGoal(goal.id)} style={{ fontSize: '16px', color: '#D4C8B8', cursor: 'pointer' }}>×</span>
             </div>
           ))}
         </div>
 
         <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+          {subjects.length > 0 && (
+            <select value={selectedSubject || ''} onChange={(e) => setSelectedSubject(e.target.value ? Number(e.target.value) : null)} style={{ padding: '10px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '13px', color: '#4A3728', outline: 'none', background: '#fff' }}>
+              <option value="">분류 없음</option>
+              {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+          )}
           <input value={newGoal} onChange={(e) => setNewGoal(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addGoal()} placeholder="새 목표 추가..." style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '14px', outline: 'none', color: '#4A3728', background: '#fff' }} />
           <button onClick={addGoal} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px 20px', fontSize: '14px', cursor: 'pointer' }}>추가</button>
         </div>
