@@ -32,7 +32,7 @@ export default function Admin() {
   }
 
   const fetchUsers = async () => {
-    const { data } = await supabase.from('profiles').select('id, nickname, role, created_at')
+    const { data } = await supabase.rpc('get_users_admin')
     setUsers(data || [])
   }
 
@@ -87,10 +87,11 @@ export default function Admin() {
             {users.map((u, i) => (
               <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: i < users.length - 1 ? '0.5px solid #F0EAE0' : 'none' }}>
                 <div>
-                  <span style={{ fontSize: '14px', color: '#4A3728', fontWeight: '500' }}>{u.nickname || '(닉네임 없음)'}</span>
+                  <span style={{ fontSize: '14px', color: '#4A3728' }}>{u.email}</span>
+                  {u.nickname && <span style={{ fontSize: '12px', color: '#9A8A78', marginLeft: '8px' }}>({u.nickname})</span>}
                   {u.role === 'admin' && <span style={{ fontSize: '10px', color: '#C9A882', marginLeft: '6px', border: '0.5px solid #C9A882', borderRadius: '6px', padding: '1px 5px' }}>관리자</span>}
                 </div>
-                <span style={{ fontSize: '12px', color: '#C4B8A8' }}>{u.id.slice(0, 8)}</span>
+                <span style={{ fontSize: '11px', color: '#C4B8A8' }}>{new Date(u.created_at).toLocaleDateString('ko-KR')}</span>
               </div>
             ))}
           </div>

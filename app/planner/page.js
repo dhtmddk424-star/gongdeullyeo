@@ -19,6 +19,9 @@ export default function Planner() {
   const [calendarMonth, setCalendarMonth] = useState(new Date())
   const [calendarData, setCalendarData] = useState({})
   const [ddays, setDdays] = useState([])
+  const [showExport, setShowExport] = useState(false)
+  const [exportData, setExportData] = useState({ quote: '', studyTime: '', showTime: true, selectedDday: null })
+  const [sessions, setSessions] = useState([])
 
   useEffect(() => {
     const getUser = async () => {
@@ -37,6 +40,7 @@ export default function Planner() {
     if (user) {
       fetchGoals(user.id, selectedDate)
       fetchFeedback(user.id, selectedDate)
+      fetchSessions(user.id, selectedDate)
     }
   }, [user, selectedDate])
 
@@ -48,6 +52,11 @@ export default function Planner() {
     const { data } = await supabase.from('goals').select('*').eq('user_id', userId).eq('date', date).order('created_at')
     setGoals(data || [])
     setLoading(false)
+  }
+
+  const fetchSessions = async (userId, date) => {
+    const { data } = await supabase.from('study_sessions').select('*').eq('user_id', userId).eq('date', date)
+    setSessions(data || [])
   }
 
   const fetchFeedback = async (userId, date) => {
@@ -122,7 +131,17 @@ export default function Planner() {
     setSelectedDate(d.toISOString().split('T')[0])
   }
 
-  // #13: 인스타 카드 생성
+  const openExport = () => {
+    const totalMin = sessions.reduce((s, v) => s + v.duration_minutes, 0)
+    setExportData({
+      quote: '"꾸준함은 재능을 이긴다."',
+      studyTime: totalMin > 0 ? `${Math.floor(totalMin / 60)}시간 ${totalMin % 60}분` : '',
+      showTime: totalMin > 0,
+      selectedDday: ddays.length > 0 ? ddays[0] : null,
+    })
+    setShowExport(true)
+  }
+
   const generateCard = () => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -312,13 +331,80 @@ export default function Planner() {
           />
         </div>
 
-        {/* #12: 이미지 저장 버튼 */}
+        {/* 이미지 저장 버튼 */}
         <div style={{ textAlign: 'center' }}>
-          <button onClick={generateCard} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '24px', padding: '12px 28px', fontSize: '14px', cursor: 'pointer' }}>
+          <button onClick={openExport} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '24px', padding: '12px 28px', fontSize: '14px', cursor: 'pointer' }}>
             이미지 저장
           </button>
         </div>
       </section>
+
+      {/* 이미지 저장 팝업 */}
+      {showExport && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div style={{ background: '#FAF7F2', borderRadius: '16px', width: '100%', maxWidth: '440px', maxHeight: '90vh', overflow: 'auto', padding: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: '500', color: '#4A3728', margin: 0 }}>인스타 카드 만들기</h2>
+              <span onClick={() => setShowExport(false)} style={{ fontSize: '20px', color: '#9A8A78', cursor: 'pointer' }}>×</span>
+            </div>
+
+            {/* D-day 선택 */}
+            <div style={{ marginBottom: '12px' }}>
+              <label style={{ fontSize: '12px', color: '#6B5B45', fontWeight: '500', display: 'block', marginBottom: '6px' }}>D-day (선택)</label>
+              <select value={exportData.selectedDday?.id || ''} onChange={(e) => {
+                const d = ddays.find(dd => dd.id === Number(e.target.value))
+                setExportData({ ...exportData, selectedDday: d || null })
+              }} style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '13px', color: '#4A3728', outline: 'none' }}>
+                <option value="">없음</option>
+                {ddays.map(d => <option key={d.id} value={d.id}>{d.title}</option>)}
+              </select>
+            </div>
+
+            {/* 명언 수정 */}
+            <div style={{ marginBottom: '12px' }}>
+              <label style={{ fontSize: '12px', color: '#6B5B45', fontWeight: '500', display: 'block', marginBottom: '6px' }}>명언</label>
+              <input value={exportData.quote} onChange={(e) => setExportData({ ...exportData, quote: e.target.value })} style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '13px', color: '#4A3728', outline: 'none', boxSizing: 'border-box' }} />
+            </div>
+
+            {/* 공부 시간 */}
+            <div style={{ marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                <label style={{ fontSize: '12px', color: '#6B5B45', fontWeight: '500' }}>공부 시간</label>
+                <label style={{ fontSize: '11px', color: '#9A8A78', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                  <input type="checkbox" checked={exportData.showTime} onChange={(e) => setExportData({ ...exportData, showTime: e.target.checked })} /> 표시
+                </label>
+              </div>
+              {exportData.showTime && (
+                <input value={exportData.studyTime} onChange={(e) => setExportData({ ...exportData, studyTime: e.target.value })} placeholder="예: 3시간 30분" style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '13px', color: '#4A3728', outline: 'none', boxSizing: 'border-box' }} />
+              )}
+            </div>
+
+            {/* 미리보기 정보 */}
+            <div style={{ background: '#fff', borderRadius: '10px', border: '0.5px solid #E8E0D4', padding: '12px', marginBottom: '16px', fontSize: '12px', color: '#9A8A78' }}>
+              <div>날짜: {new Date(selectedDate + 'T00:00:00').toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })}</div>
+              <div>할일: {goals.length}개 (완료 {goals.filter(g => g.done).length}개)</div>
+              {feedback && <div>피드백: {feedback.slice(0, 30)}{feedback.length > 30 ? '...' : ''}</div>}
+              {exportData.selectedDday && <div>D-day: {exportData.selectedDday.title}</div>}
+            </div>
+
+            {/* 버튼 */}
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button onClick={() => { generateCard(); setShowExport(false) }} style={{ flex: 1, background: '#C9A882', color: '#fff', border: 'none', borderRadius: '20px', padding: '10px', fontSize: '14px', cursor: 'pointer' }}>
+                이미지 저장
+              </button>
+              <button onClick={() => {
+                generateCard()
+                setShowExport(false)
+                const dateStr = new Date(selectedDate + 'T00:00:00').toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
+                const text = `${dateStr} 공부 인증! ${goals.filter(g=>g.done).length}/${goals.length} 완료`
+                router.push(`/community?post=${encodeURIComponent(text)}`)
+              }} style={{ flex: 1, background: '#6B5B45', color: '#fff', border: 'none', borderRadius: '20px', padding: '10px', fontSize: '14px', cursor: 'pointer' }}>
+                인증글 올리기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

@@ -143,6 +143,15 @@ export default function Home() {
           <p style={{ fontSize: '12px', color: '#C4B8A8', margin: 0 }}>— {quote.author}</p>
         </div>
       </section>
+
+      {/* 푸터 */}
+      <footer style={{ padding: '1rem 2rem 2rem', textAlign: 'center' }}>
+        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', fontSize: '12px' }}>
+          <span style={{ color: '#C4B8A8', cursor: 'pointer' }} onClick={() => router.push('/contact')}>문의하기</span>
+          <span style={{ color: '#E8E0D4' }}>·</span>
+          <span style={{ color: '#C4B8A8', cursor: 'pointer' }} onClick={() => router.push('/subscribe')}>프리미엄</span>
+        </div>
+      </footer>
     </main>
   )
 }

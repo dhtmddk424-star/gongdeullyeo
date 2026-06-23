@@ -1,12 +1,17 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useRef, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 import { getNicknames } from '../../lib/getNickname'
 import Nav from '../components/Nav'
 
-export default function Community() {
+export default function CommunityWrapper() {
+  return <Suspense><Community /></Suspense>
+}
+
+function Community() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [posts, setPosts] = useState([])
   const [newPost, setNewPost] = useState('')
   const [user, setUser] = useState(null)
@@ -19,6 +24,11 @@ export default function Community() {
   const [tagInput, setTagInput] = useState('')
   const [tags, setTags] = useState([])
   const [filterTag, setFilterTag] = useState('')
+  const [likes, setLikes] = useState({})
+  const [myLikes, setMyLikes] = useState(new Set())
+  const [comments, setComments] = useState({})
+  const [commentInputs, setCommentInputs] = useState({})
+  const [showComments, setShowComments] = useState({})
   const fileRef = useRef()
 
   useEffect(() => {
@@ -29,6 +39,8 @@ export default function Community() {
         const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
         setIsAdmin(data?.role === 'admin')
       }
+      const postParam = searchParams.get('post')
+      if (postParam) setNewPost(postParam)
       fetchPosts()
     }
     getUser()
@@ -53,7 +65,62 @@ export default function Community() {
       const nicks = await getNicknames(ids)
       setNicknames(nicks)
     }
+    // fetch likes
+    const { data: likesData } = await supabase.from('likes').select('post_id, user_id')
+    const likeCounts = {}
+    const myLikeSet = new Set()
+    ;(likesData || []).forEach(l => {
+      likeCounts[l.post_id] = (likeCounts[l.post_id] || 0) + 1
+      if (user && l.user_id === user.id) myLikeSet.add(l.post_id)
+    })
+    setLikes(likeCounts)
+    setMyLikes(myLikeSet)
+
+    // fetch comments
+    const { data: commentsData } = await supabase.from('comments').select('*').order('created_at')
+    const commentMap = {}
+    ;(commentsData || []).forEach(c => {
+      if (!commentMap[c.post_id]) commentMap[c.post_id] = []
+      commentMap[c.post_id].push(c)
+    })
+    setComments(commentMap)
+    if (commentsData && commentsData.length > 0) {
+      const cIds = [...new Set(commentsData.map(c => c.user_id))]
+      const cNicks = await getNicknames(cIds)
+      setNicknames(prev => ({ ...prev, ...cNicks }))
+    }
+
     setLoading(false)
+  }
+
+  const toggleLike = async (postId) => {
+    if (!user) { router.push('/login'); return }
+    if (myLikes.has(postId)) {
+      await supabase.from('likes').delete().eq('post_id', postId).eq('user_id', user.id)
+      const s = new Set(myLikes); s.delete(postId); setMyLikes(s)
+      setLikes({ ...likes, [postId]: (likes[postId] || 1) - 1 })
+    } else {
+      await supabase.from('likes').insert({ post_id: postId, user_id: user.id })
+      setMyLikes(new Set([...myLikes, postId]))
+      setLikes({ ...likes, [postId]: (likes[postId] || 0) + 1 })
+    }
+  }
+
+  const addComment = async (postId) => {
+    const text = commentInputs[postId]?.trim()
+    if (!text || !user) return
+    const { data } = await supabase.from('comments').insert({ post_id: postId, user_id: user.id, content: text }).select()
+    if (data) {
+      setComments({ ...comments, [postId]: [...(comments[postId] || []), data[0]] })
+      const nicks = await getNicknames([user.id])
+      setNicknames(prev => ({ ...prev, ...nicks }))
+    }
+    setCommentInputs({ ...commentInputs, [postId]: '' })
+  }
+
+  const deleteComment = async (commentId, postId) => {
+    await supabase.from('comments').delete().eq('id', commentId)
+    setComments({ ...comments, [postId]: (comments[postId] || []).filter(c => c.id !== commentId) })
   }
 
   const handleImage = (e) => {
@@ -178,6 +245,43 @@ export default function Community() {
                 </div>
               )}
               {post.image_url && <img src={post.image_url} alt="인증 사진" style={{ marginTop: '10px', maxWidth: '100%', borderRadius: '8px', display: 'block' }} />}
+
+              {/* 좋아요 + 댓글 */}
+              <div style={{ display: 'flex', gap: '16px', marginTop: '12px', paddingTop: '10px', borderTop: '0.5px solid #F0EAE0' }}>
+                <span onClick={() => toggleLike(post.id)} style={{ fontSize: '13px', color: myLikes.has(post.id) ? '#C9A882' : '#C4B8A8', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  {myLikes.has(post.id) ? '♥' : '♡'} {likes[post.id] || 0}
+                </span>
+                <span onClick={() => setShowComments({ ...showComments, [post.id]: !showComments[post.id] })} style={{ fontSize: '13px', color: '#C4B8A8', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  💬 {(comments[post.id] || []).length}
+                </span>
+              </div>
+
+              {/* 댓글 목록 */}
+              {showComments[post.id] && (
+                <div style={{ marginTop: '10px' }}>
+                  {(comments[post.id] || []).map(c => (
+                    <div key={c.id} style={{ display: 'flex', gap: '8px', padding: '6px 0', fontSize: '13px' }}>
+                      <span style={{ color: '#6B5B45', fontWeight: '500', flexShrink: 0 }}>{nicknames[c.user_id] || '익명'}</span>
+                      <span style={{ color: '#4A3728', flex: 1 }}>{c.content}</span>
+                      {(user?.id === c.user_id || isAdmin) && (
+                        <span onClick={() => deleteComment(c.id, post.id)} style={{ color: '#D4C8B8', cursor: 'pointer', flexShrink: 0 }}>×</span>
+                      )}
+                    </div>
+                  ))}
+                  {user && (
+                    <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
+                      <input
+                        value={commentInputs[post.id] || ''}
+                        onChange={(e) => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })}
+                        onKeyDown={(e) => e.key === 'Enter' && addComment(post.id)}
+                        placeholder="댓글 달기..."
+                        style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '12px', outline: 'none', color: '#4A3728' }}
+                      />
+                      <button onClick={() => addComment(post.id)} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 12px', fontSize: '12px', cursor: 'pointer' }}>등록</button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
