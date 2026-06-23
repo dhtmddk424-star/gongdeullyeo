@@ -29,8 +29,8 @@ export default function Dashboard() {
   useEffect(() => {
     const load = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/login'); return }
       setUser(user)
+      if (!user) { setLoading(false); return }
       const { data: subs } = await supabase.from('subjects').select('*').eq('user_id', user.id).order('sort_order')
       setSubjects(subs || [])
       await Promise.all([
@@ -222,6 +222,21 @@ export default function Dashboard() {
   const maxMinutes = Math.max(...weeklyStats.map(s => s.total), 60)
 
   if (loading) return <main style={{ minHeight: '100vh', background: '#FAF7F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: '#9A8A78' }}>불러오는 중...</p></main>
+
+  if (!user) return (
+    <main style={{ minHeight: '100vh', background: '#FAF7F2', fontFamily: 'sans-serif' }}>
+      <Nav />
+      <section style={{ maxWidth: '600px', margin: '0 auto', padding: '3rem 2rem', textAlign: 'center' }}>
+        <h1 style={{ fontSize: '22px', fontWeight: '500', color: '#4A3728', marginBottom: '12px' }}>대시보드</h1>
+        <p style={{ fontSize: '14px', color: '#9A8A78', marginBottom: '8px' }}>D-day, 타이머, 스트릭을 관리해보세요</p>
+        <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '2rem', marginBottom: '16px' }}>
+          <div style={{ fontSize: '40px', marginBottom: '12px' }}>📊</div>
+          <p style={{ fontSize: '14px', color: '#9A8A78', marginBottom: '16px' }}>로그인하면 대시보드를 사용할 수 있어요</p>
+          <button onClick={() => router.push('/login')} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '20px', padding: '10px 24px', fontSize: '14px', cursor: 'pointer' }}>로그인하기</button>
+        </div>
+      </section>
+    </main>
+  )
 
   return (
     <main style={{ minHeight: '100vh', background: '#FAF7F2', fontFamily: 'sans-serif' }}>
