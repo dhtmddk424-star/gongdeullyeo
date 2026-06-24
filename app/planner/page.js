@@ -23,12 +23,15 @@ export default function Planner() {
   const [ddays, setDdays] = useState([])
   const [showExport, setShowExport] = useState(false)
   const [exportData, setExportData] = useState({ quote: '', studyTime: '', showTime: true, selectedDday: null })
+  const [blurSections, setBlurSections] = useState(new Set())
   const [sessions, setSessions] = useState([])
   const [subjects, setSubjects] = useState([])
   const [selectedSubject, setSelectedSubject] = useState(null)
   const [showSubjectForm, setShowSubjectForm] = useState(false)
   const [newSubjectName, setNewSubjectName] = useState('')
   const [assigningGoalId, setAssigningGoalId] = useState(null)
+  const [editingGoalId, setEditingGoalId] = useState(null)
+  const [editGoalText, setEditGoalText] = useState('')
 
   useEffect(() => {
     const getUser = async () => {
@@ -140,6 +143,13 @@ export default function Planner() {
     const { data } = await supabase.from('goals').insert({ user_id: user.id, text: newGoal, done: false, date: selectedDate, subject_id: selectedSubject }).select()
     if (data) setGoals([...goals, data[0]])
     setNewGoal('')
+  }
+
+  const saveGoalEdit = async (id) => {
+    if (!editGoalText.trim()) return
+    await supabase.from('goals').update({ text: editGoalText.trim() }).eq('id', id)
+    setGoals(goals.map(g => g.id === id ? { ...g, text: editGoalText.trim() } : g))
+    setEditingGoalId(null)
   }
 
   const deleteGoal = async (id) => {
@@ -382,7 +392,11 @@ export default function Planner() {
                   <div onClick={() => toggleGoal(goal)} style={{ width: '20px', height: '20px', borderRadius: '6px', border: goal.done ? 'none' : '0.5px solid #D4C8B8', background: goal.done ? '#C9A882' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
                     {goal.done && <span style={{ color: '#fff', fontSize: '12px' }}>✓</span>}
                   </div>
-                  <span style={{ flex: 1, fontSize: '14px', color: goal.done ? '#C4B8A8' : '#4A3728', textDecoration: goal.done ? 'line-through' : 'none' }}>{goal.text}</span>
+                  {editingGoalId === goal.id ? (
+                    <input value={editGoalText} onChange={(e) => setEditGoalText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') saveGoalEdit(goal.id); if (e.key === 'Escape') setEditingGoalId(null) }} onBlur={() => saveGoalEdit(goal.id)} autoFocus style={{ flex: 1, fontSize: '14px', color: '#4A3728', border: 'none', borderBottom: '1px solid #C9A882', outline: 'none', background: 'transparent', padding: '2px 0' }} />
+                  ) : (
+                    <span onClick={() => { if (requireLogin()) return; setEditingGoalId(goal.id); setEditGoalText(goal.text) }} style={{ flex: 1, fontSize: '14px', color: goal.done ? '#C4B8A8' : '#4A3728', textDecoration: goal.done ? 'line-through' : 'none', cursor: 'text' }}>{goal.text}</span>
+                  )}
                   <span onClick={() => deleteGoal(goal.id)} style={{ fontSize: '16px', color: '#D4C8B8', cursor: 'pointer' }}>×</span>
                 </div>
               )
@@ -486,6 +500,16 @@ export default function Planner() {
                 <Toggle checked={exportData.showFeedback} onChange={(v) => setExportData({...exportData, showFeedback: v})} label="피드백" />
               </div>
 
+              {/* 블러 처리 */}
+              <div style={{ fontSize: '12px', marginBottom: '10px' }}>
+                <label style={{ color: '#6B5B45', display: 'block', marginBottom: '4px' }}>블러 처리 (탭하면 가려져요)</label>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  {['명언', '할일', '시간', '피드백'].map(s => (
+                    <span key={s} onClick={() => { const n = new Set(blurSections); n.has(s) ? n.delete(s) : n.add(s); setBlurSections(n) }} style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '10px', cursor: 'pointer', background: blurSections.has(s) ? '#4A3728' : '#fff', color: blurSections.has(s) ? '#fff' : '#9A8A78', border: '0.5px solid #E8E0D4' }}>{s}</span>
+                  ))}
+                </div>
+              </div>
+
               {/* D-day 선택 */}
               {exportData.showDday && ddays.length > 0 && (
                 <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
@@ -521,11 +545,11 @@ export default function Planner() {
 
                 {/* 명언 + 통계 */}
                 <div style={{ padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '10px', borderBottom: '1.5px solid #E8E0D4' }}>
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, filter: blurSections.has('명언') ? 'blur(6px)' : 'none' }}>
                     <div style={{ fontSize: '10px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '4px' }}>오늘도 공로그</div>
                     <div style={{ fontSize: '15px', fontWeight: '600', color: '#4A3728', lineHeight: '1.5', wordBreak: 'keep-all', overflowWrap: 'break-word' }}>{exportData.quote}</div>
                   </div>
-                  <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
+                  <div style={{ display: 'flex', gap: '5px', flexShrink: 0, filter: blurSections.has('시간') ? 'blur(6px)' : 'none' }}>
                     {exportData.showTime && (
                       <div style={{ background: '#F5F0E8', borderRadius: '8px', padding: '6px 10px', textAlign: 'center', minWidth: '50px' }}>
                         <div style={{ fontSize: '8px', color: '#9A8A78', letterSpacing: '0.5px' }}>공부 시간</div>
@@ -555,7 +579,7 @@ export default function Planner() {
                     <div style={{ display: 'flex', flex: 1 }}>
                       {/* 왼쪽: TASKS + 피드백 */}
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ padding: '12px 14px', flex: 1, overflow: 'hidden' }}>
+                        <div style={{ padding: '12px 14px', flex: 1, overflow: 'hidden', filter: blurSections.has('할일') ? 'blur(6px)' : 'none' }}>
                           <div style={{ fontSize: '11px', fontWeight: '700', color: '#9A8A78', marginBottom: '8px', letterSpacing: '2px' }}>TASKS</div>
                           {Object.entries(grouped).map(([name, { goals: gList, color }]) => (
                             <div key={name} style={{ marginBottom: '10px' }}>
@@ -576,7 +600,7 @@ export default function Planner() {
                           ))}
                         </div>
                         {exportData.showFeedback && feedback && (
-                          <div style={{ borderTop: '1px solid #E8E0D4', padding: '10px 14px 12px' }}>
+                          <div style={{ borderTop: '1px solid #E8E0D4', padding: '10px 14px 12px', filter: blurSections.has('피드백') ? 'blur(6px)' : 'none' }}>
                             <div style={{ fontSize: '11px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '4px' }}>오늘의 피드백</div>
                             <div style={{ fontSize: '12px', color: '#4A3728', lineHeight: '1.6', fontStyle: 'italic' }}>"{feedback}"</div>
                           </div>
@@ -612,7 +636,7 @@ export default function Planner() {
                   ) : (
                     /* 디자인1: 과목별 체크리스트 */
                     <div style={{ padding: '12px 18px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-                      <div style={{ flex: 1 }}>
+                      <div style={{ flex: 1, filter: blurSections.has('할일') ? 'blur(6px)' : 'none' }}>
                         {Object.entries(grouped).map(([name, { goals: gList, color }]) => (
                           <div key={name} style={{ marginBottom: '10px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 10px', background: color + '18', borderRadius: '6px', marginBottom: '5px' }}>
@@ -632,7 +656,7 @@ export default function Planner() {
                         ))}
                       </div>
                       {exportData.showFeedback && feedback && (
-                        <div style={{ borderTop: '1.5px solid #E8E0D4', paddingTop: '10px', marginTop: '6px' }}>
+                        <div style={{ borderTop: '1.5px solid #E8E0D4', paddingTop: '10px', marginTop: '6px', filter: blurSections.has('피드백') ? 'blur(6px)' : 'none' }}>
                           <div style={{ fontSize: '10px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '4px' }}>오늘의 피드백</div>
                           <div style={{ fontSize: '12px', color: '#4A3728', lineHeight: '1.6', fontStyle: 'italic' }}>"{feedback}"</div>
                         </div>
