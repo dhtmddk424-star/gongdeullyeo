@@ -662,11 +662,11 @@ export default function Planner() {
                     <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
                       {/* 왼쪽: TASKS + 피드백 + 공로그 */}
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ padding: '10px 14px', flex: 1, overflow: 'hidden' }}>
-                          <div style={{ fontSize: '11px', fontWeight: '700', color: '#9A8A78', marginBottom: '6px', letterSpacing: '2px' }}>TASKS</div>
+                        <div style={{ padding: '6px 14px', flex: 1, overflow: 'hidden' }}>
+                          <div style={{ fontSize: '11px', fontWeight: '700', color: '#9A8A78', marginBottom: '4px', letterSpacing: '2px' }}>TASKS</div>
                           {Object.entries(grouped).sort(([,a],[,b]) => (a.isEtc ? 1 : 0) - (b.isEtc ? 1 : 0)).map(([name, { goals: gList, color }]) => (
-                            <div key={name} style={{ marginBottom: '6px' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 8px', background: color + '12', borderLeft: `2.5px solid ${color}`, marginBottom: '2px' }}>
+                            <div key={name} style={{ marginBottom: '4px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1px 8px', background: color + '12', borderLeft: `2.5px solid ${color}`, marginBottom: '2px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                   <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: color }} />
                                   <span style={{ fontSize: '12px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
@@ -717,11 +717,11 @@ export default function Planner() {
                     </div>
                   ) : (
                     /* 디자인1: 과목별 체크리스트 */
-                    <div style={{ padding: '10px 18px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                    <div style={{ padding: '6px 18px', display: 'flex', flexDirection: 'column', flex: 1 }}>
                       <div style={{ flex: 1, overflow: 'hidden' }}>
                         {Object.entries(grouped).sort(([,a],[,b]) => (a.isEtc ? 1 : 0) - (b.isEtc ? 1 : 0)).map(([name, { goals: gList, color }]) => (
-                          <div key={name} style={{ marginBottom: '6px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 8px', background: color + '12', borderLeft: `2.5px solid ${color}`, marginBottom: '2px' }}>
+                          <div key={name} style={{ marginBottom: '4px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1px 8px', background: color + '12', borderLeft: `2.5px solid ${color}`, marginBottom: '2px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                 <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: color }} />
                                 <span style={{ fontSize: '12px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
