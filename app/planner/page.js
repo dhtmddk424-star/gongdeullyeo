@@ -461,7 +461,7 @@ export default function Planner() {
         cardGoals.forEach(g => {
           const sub = subjects.find(s => s.id === g.subject_id)
           const key = sub ? sub.name : '기타'
-          if (!grouped[key]) grouped[key] = { goals: [], color: sub?.color || '#9A8A78' }
+          if (!grouped[key]) grouped[key] = { goals: [], color: sub?.color || '#9A8A78', isEtc: !sub }
           grouped[key].goals.push(g)
         })
         const hours = Array.from({ length: 19 }, (_, i) => (i + 7) % 24)
@@ -592,15 +592,15 @@ export default function Planner() {
                 </div>
 
                 {/* 본문 */}
-                <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                   {exportData.design === 2 ? (
-                    /* 디자인2: TASKS + TIMETABLE 2열 */
-                    <div style={{ display: 'flex', flex: 1 }}>
-                      {/* 왼쪽: TASKS + 피드백 */}
+                    /* 디자인2: TASKS + TIMETABLE 2열 - 공로그 포함 */
+                    <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+                      {/* 왼쪽: TASKS + 피드백 + 공로그 */}
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                         <div style={{ padding: '10px 14px', flex: 1, overflow: 'hidden' }}>
                           <div style={{ fontSize: '11px', fontWeight: '700', color: '#9A8A78', marginBottom: '6px', letterSpacing: '2px' }}>TASKS</div>
-                          {Object.entries(grouped).map(([name, { goals: gList, color }]) => (
+                          {Object.entries(grouped).sort(([,a],[,b]) => (a.isEtc ? 1 : 0) - (b.isEtc ? 1 : 0)).map(([name, { goals: gList, color }]) => (
                             <div key={name} style={{ marginBottom: '6px' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 8px', background: color + '12', borderLeft: `2.5px solid ${color}`, marginBottom: '2px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -624,9 +624,12 @@ export default function Planner() {
                             <div style={{ fontSize: '12px', color: '#4A3728', lineHeight: '1.4', fontStyle: 'italic' }}>"{feedback}"</div>
                           </div>
                         )}
+                        <div style={{ padding: '2px 14px 6px', textAlign: 'right', marginTop: 'auto', flexShrink: 0 }}>
+                          <span style={{ fontSize: '11px', fontWeight: '700', color: '#C9A882', letterSpacing: '1px' }}>공로그</span>
+                        </div>
                       </div>
-                      {/* 세로 구분선 - 공로그 아래까지 연장 */}
-                      <div style={{ width: '1px', background: '#E8E0D4', marginBottom: '-30px' }} />
+                      {/* 세로 구분선 */}
+                      <div style={{ width: '1px', background: '#E8E0D4' }} />
                       {/* 오른쪽: TIMETABLE */}
                       <div style={{ width: '108px', flexShrink: 0, display: 'flex', flexDirection: 'column', padding: '10px 10px 0' }}>
                         <div style={{ fontSize: '10px', fontWeight: '700', color: '#9A8A78', marginBottom: '5px', letterSpacing: '1px', textAlign: 'right' }}>TIME TABLE</div>
@@ -656,7 +659,7 @@ export default function Planner() {
                     /* 디자인1: 과목별 체크리스트 */
                     <div style={{ padding: '10px 18px', display: 'flex', flexDirection: 'column', flex: 1 }}>
                       <div style={{ flex: 1, overflow: 'hidden' }}>
-                        {Object.entries(grouped).map(([name, { goals: gList, color }]) => (
+                        {Object.entries(grouped).sort(([,a],[,b]) => (a.isEtc ? 1 : 0) - (b.isEtc ? 1 : 0)).map(([name, { goals: gList, color }]) => (
                           <div key={name} style={{ marginBottom: '6px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 8px', background: color + '12', borderLeft: `2.5px solid ${color}`, marginBottom: '2px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -684,10 +687,12 @@ export default function Planner() {
                   )}
                 </div>
 
-                {/* 하단 */}
-                <div style={{ padding: '4px 16px 8px', textAlign: 'right' }}>
-                  <span style={{ fontSize: '11px', fontWeight: '700', color: '#C9A882', letterSpacing: '1px' }}>공로그</span>
-                </div>
+                {/* 하단 - 디자인1만 */}
+                {exportData.design !== 2 && (
+                  <div style={{ padding: '4px 16px 8px', textAlign: 'right' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '700', color: '#C9A882', letterSpacing: '1px' }}>공로그</span>
+                  </div>
+                )}
               </div>
             </div>
 
