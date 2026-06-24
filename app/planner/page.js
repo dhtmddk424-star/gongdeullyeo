@@ -229,7 +229,7 @@ export default function Planner() {
     const el = document.getElementById('card-preview')
     if (!el) return null
     const html2canvas = (await import('html2canvas')).default
-    return await html2canvas(el, { scale: 3, backgroundColor: '#3A2E22', useCORS: true, windowWidth: 480, windowHeight: 600 })
+    return await html2canvas(el, { scale: 3, backgroundColor: '#3A2E22', useCORS: true, width: 440, height: 550 })
   }
 
   const downloadCard = async () => {
@@ -616,7 +616,7 @@ export default function Planner() {
             </div>
 
             {/* 미리보기 카드 (4:5 비율) */}
-            <div id="card-preview" style={{ background: '#3A2E22', borderRadius: '14px', padding: '14px', fontFamily: 'sans-serif', aspectRatio: '4/5', width: '100%', maxWidth: '440px', margin: '0 auto' }}>
+            <div id="card-preview" style={{ background: '#3A2E22', borderRadius: '14px', padding: '14px', fontFamily: 'sans-serif', width: '440px', height: '550px', margin: '0 auto' }}>
               <div style={{ background: '#FAF7F2', borderRadius: '11px', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
                 {/* 헤더 */}
                 <div style={{ padding: '12px 18px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E8E0D4' }}>
