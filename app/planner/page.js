@@ -430,8 +430,8 @@ export default function Planner() {
         <div style={{ marginBottom: '16px' }}>
           {selectedSubject && (() => { const s = subjects.find(s => s.id === selectedSubject); return s ? <div style={{ fontSize: '11px', color: s.color, marginBottom: '4px' }}>▸ {s.name}에 추가됩니다</div> : null })()}
           <div style={{ display: 'flex', gap: '8px' }}>
-            <input value={newGoal} onChange={(e) => setNewGoal(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addGoal()} placeholder="새 목표 추가..." style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '14px', outline: 'none', color: '#4A3728', background: '#fff' }} />
-            <button onClick={addGoal} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px 20px', fontSize: '14px', cursor: 'pointer' }}>추가</button>
+            <input value={newGoal} onChange={(e) => setNewGoal(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addGoal()} placeholder="새 목표 추가..." style={{ flex: 1, minWidth: 0, padding: '12px', borderRadius: '8px', border: '0.5px solid #E8E0D4', fontSize: '14px', outline: 'none', color: '#4A3728', background: '#fff' }} />
+            <button onClick={addGoal} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px 16px', fontSize: '14px', cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}>추가</button>
           </div>
         </div>
 
