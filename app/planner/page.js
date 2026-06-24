@@ -595,10 +595,10 @@ export default function Planner() {
                 <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                   {exportData.design === 2 ? (
                     /* 디자인2: TASKS + TIMETABLE 2열 */
-                    <>
                     <div style={{ display: 'flex', flex: 1 }}>
-                      {/* 왼쪽: TASKS */}
-                      <div style={{ flex: 1, padding: '10px 14px', overflow: 'hidden' }}>
+                      {/* 왼쪽: TASKS + 피드백 */}
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ padding: '10px 14px', flex: 1, overflow: 'hidden' }}>
                           <div style={{ fontSize: '11px', fontWeight: '700', color: '#9A8A78', marginBottom: '6px', letterSpacing: '2px' }}>TASKS</div>
                           {Object.entries(grouped).map(([name, { goals: gList, color }]) => (
                             <div key={name} style={{ marginBottom: '6px' }}>
@@ -618,7 +618,14 @@ export default function Planner() {
                             </div>
                           ))}
                         </div>
-                      {/* 세로 구분선 */}
+                        {exportData.showFeedback && feedback && (
+                          <div style={{ padding: '6px 14px 8px', flexShrink: 0 }}>
+                            <div style={{ fontSize: '10px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '2px' }}>오늘의 피드백</div>
+                            <div style={{ fontSize: '12px', color: '#4A3728', lineHeight: '1.4', fontStyle: 'italic' }}>"{feedback}"</div>
+                          </div>
+                        )}
+                      </div>
+                      {/* 세로 구분선 - 맨 아래까지 */}
                       <div style={{ width: '1px', background: '#E8E0D4' }} />
                       {/* 오른쪽: TIMETABLE */}
                       <div style={{ width: '108px', flexShrink: 0, display: 'flex', flexDirection: 'column', padding: '10px 10px 0' }}>
@@ -645,13 +652,6 @@ export default function Planner() {
                         </div>
                       </div>
                     </div>
-                    {exportData.showFeedback && feedback && (
-                      <div style={{ borderTop: '1px solid #E8E0D4', padding: '8px 16px 10px', flexShrink: 0 }}>
-                        <div style={{ fontSize: '10px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '3px' }}>오늘의 피드백</div>
-                        <div style={{ fontSize: '12px', color: '#4A3728', lineHeight: '1.5', fontStyle: 'italic' }}>"{feedback}"</div>
-                      </div>
-                    )}
-                    </>
                   ) : (
                     /* 디자인1: 과목별 체크리스트 */
                     <div style={{ padding: '10px 18px', display: 'flex', flexDirection: 'column', flex: 1 }}>
