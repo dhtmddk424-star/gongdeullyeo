@@ -202,7 +202,7 @@ export default function Planner() {
       selectedDday: ddays.length > 0 ? ddays[0] : null,
       design: 1,
       showFeedback: !!feedback,
-      showRate: true,
+      showRate: false,
       streakCount: streakNum,
     })
     setCardGoals(goals.map(g => ({ ...g, cardText: g.text })))
