@@ -61,6 +61,7 @@ export default function RootLayout({
     >
       <head>
         <link rel="apple-touch-icon" href="/icon-192.png" />
+        <meta name="google-site-verification" content="rKXp7TXsbdXKc6_bofQLSamS57M-n0fpko3vhwRaYh4" />
       </head>
       <body className="min-h-full flex flex-col"><AuthGuard>{children}<FloatingNav /></AuthGuard></body>
     </html>
