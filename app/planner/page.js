@@ -533,14 +533,30 @@ export default function Planner() {
               <div style={{ fontSize: '12px', marginBottom: '8px' }}>
                 <span onClick={() => setShowCardEdit(!showCardEdit)} style={{ color: '#C9A882', cursor: 'pointer', fontSize: '11px' }}>{showCardEdit ? '▾ 할일 수정/블러 접기' : '▸ 할일 수정/블러 펼치기'}</span>
                 {showCardEdit && (
-                  <div style={{ background: '#FAF7F2', borderRadius: '8px', padding: '6px', marginTop: '4px', maxHeight: '100px', overflow: 'auto' }}>
+                  <div style={{ background: '#FAF7F2', borderRadius: '8px', padding: '6px', marginTop: '4px', maxHeight: '120px', overflow: 'auto' }}>
                     {cardGoals.map((g, i) => (
                       <div key={g.id} style={{ display: 'flex', gap: '4px', alignItems: 'center', marginBottom: '3px' }}>
                         <span style={{ fontSize: '9px', color: g.done ? '#C9A882' : '#D4C8B8' }}>{g.done ? '✓' : '○'}</span>
-                        <input value={g.cardText} onChange={(e) => { const n = [...cardGoals]; n[i] = { ...n[i], cardText: e.target.value }; setCardGoals(n) }} style={{ flex: 1, padding: '2px 4px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '10px', outline: 'none', color: '#4A3728', background: '#fff' }} />
+                        <input id={`card-goal-${i}`} value={g.cardText} onChange={(e) => { const n = [...cardGoals]; n[i] = { ...n[i], cardText: e.target.value }; setCardGoals(n) }} style={{ flex: 1, padding: '2px 4px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '10px', outline: 'none', color: '#4A3728', background: '#fff' }} />
+                        <span onClick={() => {
+                          const input = document.getElementById(`card-goal-${i}`)
+                          if (!input) return
+                          const start = input.selectionStart
+                          const end = input.selectionEnd
+                          if (start === end) return
+                          const text = g.cardText
+                          const selected = text.substring(start, end)
+                          if (selected.startsWith('**') && selected.endsWith('**')) {
+                            const newText = text.substring(0, start) + selected.slice(2, -2) + text.substring(end)
+                            const n = [...cardGoals]; n[i] = { ...n[i], cardText: newText }; setCardGoals(n)
+                          } else {
+                            const newText = text.substring(0, start) + '**' + selected + '**' + text.substring(end)
+                            const n = [...cardGoals]; n[i] = { ...n[i], cardText: newText }; setCardGoals(n)
+                          }
+                        }} style={{ fontSize: '10px', color: '#C9A882', cursor: 'pointer', flexShrink: 0, padding: '1px 4px', border: '0.5px solid #C9A882', borderRadius: '4px' }}>블러</span>
                       </div>
                     ))}
-                    <div style={{ fontSize: '9px', color: '#C4B8A8', marginTop: '2px' }}>**텍스트** → 블러 처리</div>
+                    <div style={{ fontSize: '9px', color: '#C4B8A8', marginTop: '2px' }}>텍스트 드래그 후 [블러] 클릭</div>
                   </div>
                 )}
               </div>
@@ -636,13 +652,13 @@ export default function Planner() {
                   <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
                     {exportData.showTime && (
                       <div style={{ background: '#F5F0E8', borderRadius: '7px', padding: '10px 9px 5px', textAlign: 'center', minWidth: '44px' }}>
-                        <div style={{ fontSize: '8px', color: '#9A8A78', letterSpacing: '0.5px', marginBottom: '3px' }}>공부 시간</div>
+                        <div style={{ fontSize: '8px', color: '#9A8A78', letterSpacing: '0.5px', marginBottom: '2px' }}>공부 시간</div>
                         <div style={{ fontSize: '14px', fontWeight: '700', color: '#4A3728' }}>{exportData.studyTime}</div>
                       </div>
                     )}
                     {exportData.showRate && (
                       <div style={{ background: '#F5F0E8', borderRadius: '7px', padding: '10px 9px 5px', textAlign: 'center', minWidth: '44px' }}>
-                        <div style={{ fontSize: '8px', color: '#9A8A78', letterSpacing: '0.5px', marginBottom: '3px' }}>달성률</div>
+                        <div style={{ fontSize: '8px', color: '#9A8A78', letterSpacing: '0.5px', marginBottom: '2px' }}>달성률</div>
                         <div style={{ fontSize: '14px', fontWeight: '700', color: '#4A3728' }}>{pct}%</div>
                       </div>
                     )}
