@@ -161,24 +161,35 @@ export default function Dashboard() {
   const [timerPaused, setTimerPaused] = useState(false)
   const [timerStartedAt, setTimerStartedAt] = useState(null)
 
+  const [pausedSeconds, setPausedSeconds] = useState(0)
+
   const startTimer = () => {
     if (requireLogin()) return
     if (!timerSubject.trim()) setTimerSubject('기타')
     setTimerRunning(true)
     setTimerPaused(false)
     setTimerSeconds(0)
-    setTimerStartedAt(new Date())
-    intervalRef.current = setInterval(() => setTimerSeconds(s => s + 1), 1000)
+    setPausedSeconds(0)
+    const now = new Date()
+    setTimerStartedAt(now)
+    intervalRef.current = setInterval(() => {
+      setTimerSeconds(Math.floor((Date.now() - now.getTime()) / 1000))
+    }, 1000)
   }
 
   const pauseTimer = () => {
     clearInterval(intervalRef.current)
+    setPausedSeconds(timerSeconds)
     setTimerPaused(true)
   }
 
   const resumeTimer = () => {
     setTimerPaused(false)
-    intervalRef.current = setInterval(() => setTimerSeconds(s => s + 1), 1000)
+    const offset = pausedSeconds * 1000
+    const resumeBase = Date.now() - offset
+    intervalRef.current = setInterval(() => {
+      setTimerSeconds(Math.floor((Date.now() - resumeBase) / 1000))
+    }, 1000)
   }
 
   const stopTimer = async () => {
@@ -187,12 +198,13 @@ export default function Dashboard() {
     setTimerPaused(false)
     const sub = timerSubject || '기타'
     const endedAt = new Date()
-    if (user && timerSeconds > 0) {
+    const actualSeconds = timerPaused ? pausedSeconds : timerSeconds
+    if (user && actualSeconds > 0) {
       await supabase.from('study_sessions').insert({
         user_id: user.id,
         subject: sub,
-        duration_minutes: Math.max(1, Math.round(timerSeconds / 60)),
-        duration_seconds: timerSeconds,
+        duration_minutes: Math.max(1, Math.round(actualSeconds / 60)),
+        duration_seconds: actualSeconds,
         started_at: timerStartedAt.toISOString(),
         ended_at: endedAt.toISOString(),
         date: getToday()
@@ -201,6 +213,7 @@ export default function Dashboard() {
       fetchWeeklyStats(user.id, weekOffset)
     }
     setTimerSeconds(0)
+    setPausedSeconds(0)
     setTimerSubject('')
     setTimerStartedAt(null)
   }
