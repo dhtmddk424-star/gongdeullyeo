@@ -23,7 +23,7 @@ export default function Planner() {
   const [ddays, setDdays] = useState([])
   const [showExport, setShowExport] = useState(false)
   const [exportData, setExportData] = useState({ quote: '', studyTime: '', showTime: true, selectedDday: null })
-  const [blurSections, setBlurSections] = useState(new Set())
+  const [cardGoals, setCardGoals] = useState([])
   const [sessions, setSessions] = useState([])
   const [subjects, setSubjects] = useState([])
   const [selectedSubject, setSelectedSubject] = useState(null)
@@ -200,6 +200,7 @@ export default function Planner() {
       showRate: true,
       streakCount: streakNum,
     })
+    setCardGoals(goals.map(g => ({ ...g, cardText: g.text })))
     setShowExport(true)
   }
 
@@ -260,6 +261,16 @@ export default function Planner() {
   }
 
   if (loading) return <main style={{ minHeight: '100vh', background: '#FAF7F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: '#9A8A78' }}>불러오는 중...</p></main>
+
+  const renderBlurText = (text) => {
+    const parts = text.split(/(\*\*[^*]+\*\*)/)
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <span key={i} style={{ filter: 'blur(5px)', userSelect: 'none' }}>{part.slice(2, -2)}</span>
+      }
+      return <span key={i}>{part}</span>
+    })
+  }
 
   const requireLogin = () => {
     if (!user) {
@@ -445,7 +456,7 @@ export default function Planner() {
         const dc = goals.filter(g => g.done).length
         const pct = goals.length ? Math.round((dc / goals.length) * 100) : 0
         const grouped = {}
-        goals.forEach(g => {
+        cardGoals.forEach(g => {
           const sub = subjects.find(s => s.id === g.subject_id)
           const key = sub ? sub.name : '기타'
           if (!grouped[key]) grouped[key] = { goals: [], color: sub?.color || '#9A8A78' }
@@ -500,14 +511,18 @@ export default function Planner() {
                 <Toggle checked={exportData.showFeedback} onChange={(v) => setExportData({...exportData, showFeedback: v})} label="피드백" />
               </div>
 
-              {/* 블러 처리 */}
+              {/* 할일 텍스트 수정 + 블러 */}
               <div style={{ fontSize: '12px', marginBottom: '10px' }}>
-                <label style={{ color: '#6B5B45', display: 'block', marginBottom: '4px' }}>블러 처리 (탭하면 가려져요)</label>
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                  {['명언', '할일', '시간', '피드백'].map(s => (
-                    <span key={s} onClick={() => { const n = new Set(blurSections); n.has(s) ? n.delete(s) : n.add(s); setBlurSections(n) }} style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '10px', cursor: 'pointer', background: blurSections.has(s) ? '#4A3728' : '#fff', color: blurSections.has(s) ? '#fff' : '#9A8A78', border: '0.5px solid #E8E0D4' }}>{s}</span>
+                <label style={{ color: '#6B5B45', display: 'block', marginBottom: '4px' }}>할일 수정 · 블러: **텍스트** 로 감싸기</label>
+                <div style={{ background: '#FAF7F2', borderRadius: '8px', padding: '8px', maxHeight: '120px', overflow: 'auto' }}>
+                  {cardGoals.map((g, i) => (
+                    <div key={g.id} style={{ display: 'flex', gap: '4px', alignItems: 'center', marginBottom: '4px' }}>
+                      <span style={{ fontSize: '10px', color: g.done ? '#C9A882' : '#D4C8B8' }}>{g.done ? '✓' : '○'}</span>
+                      <input value={g.cardText} onChange={(e) => { const n = [...cardGoals]; n[i] = { ...n[i], cardText: e.target.value }; setCardGoals(n) }} style={{ flex: 1, padding: '3px 6px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '11px', outline: 'none', color: '#4A3728', background: '#fff' }} />
+                    </div>
                   ))}
                 </div>
+                <div style={{ fontSize: '10px', color: '#C4B8A8', marginTop: '4px' }}>예: 영어 단어 **50개** 암기 → "50개"가 블러됩니다</div>
               </div>
 
               {/* D-day 선택 */}
@@ -545,11 +560,11 @@ export default function Planner() {
 
                 {/* 명언 + 통계 */}
                 <div style={{ padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '10px', borderBottom: '1.5px solid #E8E0D4' }}>
-                  <div style={{ flex: 1, filter: blurSections.has('명언') ? 'blur(6px)' : 'none' }}>
+                  <div style={{ flex: 1 }}>
                     <div style={{ fontSize: '10px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '4px' }}>오늘도 공로그</div>
                     <div style={{ fontSize: '15px', fontWeight: '600', color: '#4A3728', lineHeight: '1.5', wordBreak: 'keep-all', overflowWrap: 'break-word' }}>{exportData.quote}</div>
                   </div>
-                  <div style={{ display: 'flex', gap: '5px', flexShrink: 0, filter: blurSections.has('시간') ? 'blur(6px)' : 'none' }}>
+                  <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
                     {exportData.showTime && (
                       <div style={{ background: '#F5F0E8', borderRadius: '8px', padding: '6px 10px', textAlign: 'center', minWidth: '50px' }}>
                         <div style={{ fontSize: '8px', color: '#9A8A78', letterSpacing: '0.5px' }}>공부 시간</div>
@@ -579,7 +594,7 @@ export default function Planner() {
                     <div style={{ display: 'flex', flex: 1 }}>
                       {/* 왼쪽: TASKS + 피드백 */}
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ padding: '12px 14px', flex: 1, overflow: 'hidden', filter: blurSections.has('할일') ? 'blur(6px)' : 'none' }}>
+                        <div style={{ padding: '12px 14px', flex: 1, overflow: 'hidden' }}>
                           <div style={{ fontSize: '11px', fontWeight: '700', color: '#9A8A78', marginBottom: '8px', letterSpacing: '2px' }}>TASKS</div>
                           {Object.entries(grouped).map(([name, { goals: gList, color }]) => (
                             <div key={name} style={{ marginBottom: '10px' }}>
@@ -593,14 +608,14 @@ export default function Planner() {
                               {gList.map(g => (
                                 <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '3px 0', fontSize: '11px' }}>
                                   <span style={{ width: '14px', height: '14px', borderRadius: '3px', background: g.done ? color : '#fff', border: g.done ? 'none' : `1px solid ${color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#fff', flexShrink: 0 }}>{g.done && '✓'}</span>
-                                  <span style={{ color: g.done ? '#C4B8A8' : '#4A3728', textDecoration: g.done ? 'line-through' : 'none' }}>{g.text}</span>
+                                  <span style={{ color: g.done ? '#C4B8A8' : '#4A3728', textDecoration: g.done ? 'line-through' : 'none' }}>{renderBlurText(g.cardText || g.text)}</span>
                                 </div>
                               ))}
                             </div>
                           ))}
                         </div>
                         {exportData.showFeedback && feedback && (
-                          <div style={{ borderTop: '1px solid #E8E0D4', padding: '10px 14px 12px', filter: blurSections.has('피드백') ? 'blur(6px)' : 'none' }}>
+                          <div style={{ borderTop: '1px solid #E8E0D4', padding: '10px 14px 12px' }}>
                             <div style={{ fontSize: '11px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '4px' }}>오늘의 피드백</div>
                             <div style={{ fontSize: '12px', color: '#4A3728', lineHeight: '1.6', fontStyle: 'italic' }}>"{feedback}"</div>
                           </div>
@@ -636,7 +651,7 @@ export default function Planner() {
                   ) : (
                     /* 디자인1: 과목별 체크리스트 */
                     <div style={{ padding: '12px 18px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-                      <div style={{ flex: 1, filter: blurSections.has('할일') ? 'blur(6px)' : 'none' }}>
+                      <div style={{ flex: 1 }}>
                         {Object.entries(grouped).map(([name, { goals: gList, color }]) => (
                           <div key={name} style={{ marginBottom: '10px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 10px', background: color + '18', borderRadius: '6px', marginBottom: '5px' }}>
@@ -649,14 +664,14 @@ export default function Planner() {
                             {gList.map(g => (
                               <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 4px', fontSize: '12px', borderBottom: '0.5px solid #F0EAE0' }}>
                                 <span style={{ width: '16px', height: '16px', borderRadius: '4px', background: g.done ? color : '#fff', border: g.done ? 'none' : `1.5px solid ${color}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#fff', flexShrink: 0 }}>{g.done && '✓'}</span>
-                                <span style={{ color: g.done ? '#C4B8A8' : '#4A3728', textDecoration: g.done ? 'line-through' : 'none', flex: 1 }}>{g.text}</span>
+                                <span style={{ color: g.done ? '#C4B8A8' : '#4A3728', textDecoration: g.done ? 'line-through' : 'none', flex: 1 }}>{renderBlurText(g.cardText || g.text)}</span>
                               </div>
                             ))}
                           </div>
                         ))}
                       </div>
                       {exportData.showFeedback && feedback && (
-                        <div style={{ borderTop: '1.5px solid #E8E0D4', paddingTop: '10px', marginTop: '6px', filter: blurSections.has('피드백') ? 'blur(6px)' : 'none' }}>
+                        <div style={{ borderTop: '1.5px solid #E8E0D4', paddingTop: '10px', marginTop: '6px' }}>
                           <div style={{ fontSize: '10px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '4px' }}>오늘의 피드백</div>
                           <div style={{ fontSize: '12px', color: '#4A3728', lineHeight: '1.6', fontStyle: 'italic' }}>"{feedback}"</div>
                         </div>
