@@ -467,11 +467,11 @@ export default function Planner() {
         const hours = Array.from({ length: 19 }, (_, i) => (i + 7) % 24)
         const sessionSlots = {}
         sessions.forEach(s => {
-          const endTime = new Date(s.created_at)
-          const startTime = new Date(endTime.getTime() - s.duration_minutes * 60000)
+          const startTime = s.started_at ? new Date(s.started_at) : new Date(new Date(s.created_at).getTime() - s.duration_minutes * 60000)
+          const actualSeconds = s.duration_seconds || s.duration_minutes * 60
           const sub = subjects.find(sb => sb.name === s.subject)
           const color = sub?.color || '#C9A882'
-          for (let m = 0; m < s.duration_minutes; m += 5) {
+          for (let m = 0; m < Math.ceil(actualSeconds / 60); m += 5) {
             const t = new Date(startTime.getTime() + m * 60000)
             const h = t.getHours()
             const slot = Math.floor(t.getMinutes() / 5)
