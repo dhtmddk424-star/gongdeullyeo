@@ -103,7 +103,15 @@ export default function Dashboard() {
 
   const fetchSessions = async (uid, date) => {
     const d = date || getToday()
-    const { data } = await supabase.from('study_sessions').select('*').eq('user_id', uid).eq('date', d).order('started_at', { ascending: true, nullsFirst: false }).order('created_at', { ascending: true })
+    const { data: raw } = await supabase.from('study_sessions').select('*').eq('user_id', uid).eq('date', d)
+    const data = (raw || []).sort((a, b) => {
+      const getSort = (s) => {
+        if (!s.started_at) return 9999
+        const h = new Date(s.started_at).getHours()
+        return h < 4 ? h + 24 : h
+      }
+      return getSort(a) - getSort(b)
+    })
     setSessions(data || [])
   }
 
