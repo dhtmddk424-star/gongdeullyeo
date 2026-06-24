@@ -228,40 +228,30 @@ export default function Planner() {
   const getCardCanvas = async () => {
     const el = document.getElementById('card-preview')
     if (!el) return null
-    const html2canvas = (await import('html2canvas')).default
-    const clone = el.cloneNode(true)
-    clone.style.position = 'absolute'
-    clone.style.top = '0'
-    clone.style.left = '-9999px'
-    clone.style.width = el.offsetWidth + 'px'
-    clone.style.height = el.offsetHeight + 'px'
-    document.body.appendChild(clone)
-    await new Promise(r => setTimeout(r, 50))
-    const canvas = await html2canvas(clone, { scale: 3, backgroundColor: '#3A2E22', useCORS: true, logging: false })
-    document.body.removeChild(clone)
-    return canvas
+    const domtoimage = (await import('dom-to-image-more')).default
+    const dataUrl = await domtoimage.toPng(el, { quality: 1, scale: 3 })
+    return dataUrl
   }
 
   const downloadCard = async () => {
-    const canvas = await getCardCanvas()
-    if (!canvas) return
+    const dataUrl = await getCardCanvas()
+    if (!dataUrl) return
     const link = document.createElement('a')
     link.download = `공로그_${selectedDate}.png`
-    link.href = canvas.toDataURL('image/png')
+    link.href = dataUrl
     link.click()
   }
 
   const postToFeed = async () => {
-    const canvas = await getCardCanvas()
-    if (!canvas) return
-    canvas.toBlob(async (blob) => {
-      if (!blob || !user) return
-      const fileName = `card-${user.id}-${Date.now()}.png`
-      await supabase.storage.from('posts').upload(fileName, blob)
-      const { data: urlData } = supabase.storage.from('posts').getPublicUrl(fileName)
-      setShowExport(false)
-      router.push(`/community?image=${encodeURIComponent(urlData.publicUrl)}`)
-    }, 'image/png')
+    const dataUrl = await getCardCanvas()
+    if (!dataUrl || !user) return
+    const res = await fetch(dataUrl)
+    const blob = await res.blob()
+    const fileName = `card-${user.id}-${Date.now()}.png`
+    await supabase.storage.from('posts').upload(fileName, blob)
+    const { data: urlData } = supabase.storage.from('posts').getPublicUrl(fileName)
+    setShowExport(false)
+    router.push(`/community?image=${encodeURIComponent(urlData.publicUrl)}`)
   }
 
   const isToday = selectedDate === getToday()
