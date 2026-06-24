@@ -229,7 +229,8 @@ export default function Planner() {
     const el = document.getElementById('card-preview')
     if (!el) return null
     const html2canvas = (await import('html2canvas')).default
-    return await html2canvas(el, { scale: 3, backgroundColor: '#3A2E22', useCORS: true, width: 440, height: 550 })
+    const rect = el.getBoundingClientRect()
+    return await html2canvas(el, { scale: 3, backgroundColor: '#3A2E22', useCORS: true, width: rect.width, height: rect.height, scrollX: 0, scrollY: -window.scrollY })
   }
 
   const downloadCard = async () => {
