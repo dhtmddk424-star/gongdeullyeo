@@ -229,10 +229,15 @@ export default function Planner() {
     const el = document.getElementById('card-preview')
     if (!el) return null
     const html2canvas = (await import('html2canvas')).default
-    const rect = el.getBoundingClientRect()
-    window.scrollTo(0, 0)
-    await new Promise(r => setTimeout(r, 100))
-    return await html2canvas(el, { scale: 3, backgroundColor: '#3A2E22', useCORS: true, width: rect.width, height: rect.height, scrollX: 0, scrollY: 0, x: 0, y: 0 })
+    const clone = el.cloneNode(true)
+    clone.style.position = 'fixed'
+    clone.style.top = '0'
+    clone.style.left = '0'
+    clone.style.zIndex = '-9999'
+    document.body.appendChild(clone)
+    const canvas = await html2canvas(clone, { scale: 3, backgroundColor: '#3A2E22', useCORS: true })
+    document.body.removeChild(clone)
+    return canvas
   }
 
   const downloadCard = async () => {
