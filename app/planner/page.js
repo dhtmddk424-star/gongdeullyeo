@@ -476,7 +476,7 @@ export default function Planner() {
           if (!grouped[key]) grouped[key] = { goals: [], color: sub?.color || '#9A8A78', isEtc: !sub }
           grouped[key].goals.push(g)
         })
-        const hours = Array.from({ length: 21 }, (_, i) => (i + 6) % 24)
+        const hours = Array.from({ length: 22 }, (_, i) => (i + 6) % 24)
         const sessionSlots = {}
         sessions.forEach(s => {
           const startTime = s.started_at ? new Date(s.started_at) : new Date(new Date(s.created_at).getTime() - s.duration_minutes * 60000)
@@ -553,14 +553,14 @@ export default function Planner() {
                     <div style={{ background: '#FAF7F2', borderRadius: '8px', padding: '8px', marginTop: '4px' }}>
                       <div style={{ display: 'flex', gap: '4px', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap' }}>
                         <select value={addTimeFrom} onChange={(e) => setAddTimeFrom(e.target.value)} style={{ padding: '3px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '11px', color: '#4A3728' }}>
-                          {Array.from({ length: 24 }, (_, i) => <option key={i} value={String(i).padStart(2, '0')}>{String(i).padStart(2, '0')}시</option>)}
+                          {[6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,0,1,2,3].map(h => <option key={h} value={String(h).padStart(2,'0')}>{String(h).padStart(2,'0')}시</option>)}
                         </select>
                         <select value={addTimeFromMin} onChange={(e) => setAddTimeFromMin(e.target.value)} style={{ padding: '3px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '11px', color: '#4A3728' }}>
                           {['00','05','10','15','20','25','30','35','40','45','50','55'].map(m => <option key={m} value={m}>{m}분</option>)}
                         </select>
                         <span style={{ fontSize: '10px', color: '#9A8A78' }}>~</span>
                         <select value={addTimeTo} onChange={(e) => setAddTimeTo(e.target.value)} style={{ padding: '3px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '11px', color: '#4A3728' }}>
-                          {Array.from({ length: 24 }, (_, i) => <option key={i} value={String(i).padStart(2, '0')}>{String(i).padStart(2, '0')}시</option>)}
+                          {[6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,0,1,2,3].map(h => <option key={h} value={String(h).padStart(2,'0')}>{String(h).padStart(2,'0')}시</option>)}
                         </select>
                         <select value={addTimeToMin} onChange={(e) => setAddTimeToMin(e.target.value)} style={{ padding: '3px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '11px', color: '#4A3728' }}>
                           {['00','05','10','15','20','25','30','35','40','45','50','55'].map(m => <option key={m} value={m}>{m}분</option>)}
@@ -700,7 +700,7 @@ export default function Planner() {
                       <div style={{ width: '108px', flexShrink: 0, display: 'flex', flexDirection: 'column', padding: '10px 10px 12px' }}>
                         <div style={{ fontSize: '10px', fontWeight: '700', color: '#9A8A78', marginBottom: '5px', letterSpacing: '1px', textAlign: 'right' }}>TIME TABLE</div>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1px' }}>
-                        {Array.from({ length: 21 }, (_, i) => (i + 6) % 24).map(h => {
+                        {Array.from({ length: 22 }, (_, i) => (i + 6) % 24).map(h => {
                           const slots = sessionSlots[h] || {}
                           return (
                             <div key={h} style={{ display: 'flex', alignItems: 'center', gap: '3px', flex: 1 }}>

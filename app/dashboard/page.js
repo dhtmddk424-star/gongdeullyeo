@@ -24,6 +24,12 @@ export default function Dashboard() {
   const [sessionDate, setSessionDate] = useState(getToday())
   const [showNewSubject, setShowNewSubject] = useState(false)
   const [newSubjectName, setNewSubjectName] = useState('')
+  const [showAddSession, setShowAddSession] = useState(false)
+  const [addSessSubject, setAddSessSubject] = useState('')
+  const [addSessFromH, setAddSessFromH] = useState('09')
+  const [addSessFromM, setAddSessFromM] = useState('00')
+  const [addSessToH, setAddSessToH] = useState('10')
+  const [addSessToM, setAddSessToM] = useState('00')
   const intervalRef = useRef(null)
 
   useEffect(() => {
@@ -385,6 +391,54 @@ export default function Dashboard() {
                 </div>
               </>
             )}
+            {/* 수동 시간 추가 */}
+            <div style={{ marginTop: '8px' }}>
+              <span onClick={() => setShowAddSession(!showAddSession)} style={{ fontSize: '11px', color: '#C9A882', cursor: 'pointer' }}>{showAddSession ? '▾ 시간 직접 추가 접기' : '▸ 시간 직접 추가'}</span>
+              {showAddSession && (
+                <div style={{ background: '#FAF7F2', borderRadius: '8px', padding: '8px', marginTop: '4px' }}>
+                  <div style={{ display: 'flex', gap: '4px', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap' }}>
+                    <select value={addSessFromH} onChange={(e) => setAddSessFromH(e.target.value)} style={{ padding: '3px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '11px', color: '#4A3728' }}>
+                      {[6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,0,1,2,3].map(h => <option key={h} value={String(h).padStart(2,'0')}>{String(h).padStart(2,'0')}시</option>)}
+                    </select>
+                    <select value={addSessFromM} onChange={(e) => setAddSessFromM(e.target.value)} style={{ padding: '3px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '11px', color: '#4A3728' }}>
+                      {['00','10','20','30','40','50'].map(m => <option key={m} value={m}>{m}분</option>)}
+                    </select>
+                    <span style={{ fontSize: '10px', color: '#9A8A78' }}>~</span>
+                    <select value={addSessToH} onChange={(e) => setAddSessToH(e.target.value)} style={{ padding: '3px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '11px', color: '#4A3728' }}>
+                      {[6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,0,1,2,3].map(h => <option key={h} value={String(h).padStart(2,'0')}>{String(h).padStart(2,'0')}시</option>)}
+                    </select>
+                    <select value={addSessToM} onChange={(e) => setAddSessToM(e.target.value)} style={{ padding: '3px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '11px', color: '#4A3728' }}>
+                      {['00','10','20','30','40','50'].map(m => <option key={m} value={m}>{m}분</option>)}
+                    </select>
+                  </div>
+                  <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    {subjects.map(s => (
+                      <span key={s.id} onClick={() => setAddSessSubject(s.name)} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '10px', cursor: 'pointer', background: addSessSubject === s.name ? s.color : '#fff', color: addSessSubject === s.name ? '#fff' : s.color, border: `1px solid ${s.color}` }}>{s.name}</span>
+                    ))}
+                    <button onClick={async () => {
+                      if (!user) return
+                      const fromMin = Number(addSessFromH) * 60 + Number(addSessFromM)
+                      let toMin = Number(addSessToH) * 60 + Number(addSessToM)
+                      if (toMin <= fromMin) toMin += 24 * 60
+                      const dur = toMin - fromMin
+                      if (dur <= 0 || dur > 1440) return
+                      const d = new Date(sessionDate + 'T00:00:00')
+                      d.setHours(Number(addSessFromH), Number(addSessFromM))
+                      const endD = new Date(d.getTime() + dur * 60000)
+                      await supabase.from('study_sessions').insert({
+                        user_id: user.id, subject: addSessSubject || '기타',
+                        duration_minutes: dur, duration_seconds: dur * 60,
+                        started_at: d.toISOString(), ended_at: endD.toISOString(),
+                        date: sessionDate
+                      })
+                      fetchSessions(user.id, sessionDate)
+                      fetchWeeklyStats(user.id, weekOffset)
+                      setShowAddSession(false)
+                    }} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '8px', padding: '4px 10px', fontSize: '10px', cursor: 'pointer' }}>추가</button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
