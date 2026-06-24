@@ -11,6 +11,8 @@ export default function Admin() {
   const [users, setUsers] = useState([])
   const [tab, setTab] = useState('inquiries')
   const [payments, setPayments] = useState([])
+  const [credits, setCredits] = useState([])
+  const [referrals, setReferrals] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -23,6 +25,7 @@ export default function Admin() {
       await fetchInquiries()
       await fetchUsers()
       await fetchPayments()
+      await fetchCredits()
       setLoading(false)
     }
     load()
@@ -43,6 +46,13 @@ export default function Admin() {
     setPayments(data || [])
   }
 
+  const fetchCredits = async () => {
+    const { data: creds } = await supabase.rpc('get_users_admin')
+    setCredits((creds || []).filter(u => u.credits > 0 || u.referral_code))
+    const { data: refs } = await supabase.from('referrals').select('*').order('created_at', { ascending: false })
+    setReferrals(refs || [])
+  }
+
   const deleteInquiry = async (id) => {
     await supabase.from('inquiries').delete().eq('id', id)
     setInquiries(inquiries.filter(i => i.id !== id))
@@ -58,10 +68,10 @@ export default function Admin() {
       <section style={{ maxWidth: '700px', margin: '0 auto', padding: '2rem' }}>
         <h1 style={{ fontSize: '22px', fontWeight: '500', color: '#4A3728', marginBottom: '1.5rem' }}>관리자 페이지</h1>
 
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '1.5rem' }}>
-          {['inquiries', 'users', 'payments'].map(t => (
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+          {['inquiries', 'users', 'credits', 'payments'].map(t => (
             <span key={t} onClick={() => setTab(t)} style={{ fontSize: '13px', padding: '6px 16px', borderRadius: '14px', cursor: 'pointer', background: tab === t ? '#C9A882' : '#fff', color: tab === t ? '#fff' : '#9A8A78', border: '0.5px solid #E8E0D4' }}>
-              {t === 'inquiries' ? `문의 (${inquiries.length})` : t === 'users' ? `회원 (${users.length})` : `결제 (${payments.length})`}
+              {t === 'inquiries' ? `문의 (${inquiries.length})` : t === 'users' ? `회원 (${users.length})` : t === 'credits' ? '크레딧' : `결제 (${payments.length})`}
             </span>
           ))}
         </div>
@@ -101,6 +111,57 @@ export default function Admin() {
                 <span style={{ fontSize: '11px', color: '#C4B8A8' }}>{new Date(u.created_at).toLocaleDateString('ko-KR')}</span>
               </div>
             ))}
+          </div>
+        )}
+
+        {tab === 'credits' && (
+          <div>
+            {/* 전체 요약 */}
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+              <div style={{ flex: 1, background: '#fff', borderRadius: '10px', border: '0.5px solid #E8E0D4', padding: '12px', textAlign: 'center' }}>
+                <div style={{ fontSize: '20px', fontWeight: '600', color: '#C9A882' }}>{users.reduce((s, u) => s + (u.credits || 0), 0).toLocaleString()}원</div>
+                <div style={{ fontSize: '11px', color: '#9A8A78', marginTop: '2px' }}>총 발행 크레딧</div>
+              </div>
+              <div style={{ flex: 1, background: '#fff', borderRadius: '10px', border: '0.5px solid #E8E0D4', padding: '12px', textAlign: 'center' }}>
+                <div style={{ fontSize: '20px', fontWeight: '600', color: '#C9A882' }}>{referrals.length}</div>
+                <div style={{ fontSize: '11px', color: '#9A8A78', marginTop: '2px' }}>총 초대 건수</div>
+              </div>
+            </div>
+
+            {/* 유저별 크레딧 */}
+            <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', overflow: 'hidden', marginBottom: '16px' }}>
+              <div style={{ padding: '12px 16px', borderBottom: '0.5px solid #F0EAE0', fontSize: '13px', color: '#6B5B45', fontWeight: '500' }}>유저별 크레딧</div>
+              {users.filter(u => u.credits > 0).length === 0 && <p style={{ fontSize: '12px', color: '#C4B8A8', textAlign: 'center', padding: '16px' }}>크레딧 보유자가 없어요</p>}
+              {users.filter(u => u.credits > 0).map((u, i) => (
+                <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', borderBottom: '0.5px solid #F0EAE0' }}>
+                  <div>
+                    <span style={{ fontSize: '13px', color: '#4A3728' }}>{u.email}</span>
+                    {u.nickname && <span style={{ fontSize: '11px', color: '#9A8A78', marginLeft: '6px' }}>({u.nickname})</span>}
+                  </div>
+                  <span style={{ fontSize: '14px', fontWeight: '600', color: '#C9A882' }}>{(u.credits || 0).toLocaleString()}원</span>
+                </div>
+              ))}
+            </div>
+
+            {/* 최근 초대 기록 */}
+            <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', overflow: 'hidden' }}>
+              <div style={{ padding: '12px 16px', borderBottom: '0.5px solid #F0EAE0', fontSize: '13px', color: '#6B5B45', fontWeight: '500' }}>최근 초대 기록</div>
+              {referrals.length === 0 && <p style={{ fontSize: '12px', color: '#C4B8A8', textAlign: 'center', padding: '16px' }}>초대 기록이 없어요</p>}
+              {referrals.map(r => {
+                const inviter = users.find(u => u.id === r.inviter_id)
+                const invitee = users.find(u => u.id === r.invitee_id)
+                return (
+                  <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', borderBottom: '0.5px solid #F0EAE0', fontSize: '12px' }}>
+                    <div>
+                      <span style={{ color: '#C9A882' }}>{inviter?.email || '?'}</span>
+                      <span style={{ color: '#9A8A78' }}> → </span>
+                      <span style={{ color: '#4A3728' }}>{invitee?.email || '?'}</span>
+                    </div>
+                    <span style={{ color: '#C4B8A8' }}>{new Date(r.created_at).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}</span>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
 
