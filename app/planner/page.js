@@ -545,8 +545,8 @@ export default function Planner() {
                 )}
               </div>
 
-              {/* 타임테이블 시간 추가 */}
-              {exportData.design === 2 && (
+              {/* 타임테이블 시간 추가 - 숨김 */}
+              {false && exportData.design === 2 && (
                 <div style={{ fontSize: '12px', marginBottom: '8px' }}>
                   <span onClick={() => setShowAddTime(!showAddTime)} style={{ color: '#C9A882', cursor: 'pointer', fontSize: '11px' }}>{showAddTime ? '▾ 타임테이블 시간 추가 접기' : '▸ 타임테이블 시간 추가'}</span>
                   {showAddTime && (
