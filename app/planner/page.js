@@ -620,8 +620,8 @@ export default function Planner() {
               <div style={{ background: '#FAF7F2', borderRadius: '11px', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
                 {/* 헤더 */}
                 <div style={{ padding: '8px 16px 6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E8E0D4' }}>
-                  <div style={{ color: '#4A3728', fontSize: '11px', fontWeight: '500' }}>{dateStr}</div>
-                  {exportData.streakCount > 0 && <div style={{ color: '#C9A882', fontSize: '11px', fontWeight: '600' }}>🔥 {exportData.streakCount}일 연속</div>}
+                  <div style={{ color: '#4A3728', fontSize: '11px', fontWeight: '500', whiteSpace: 'nowrap' }}>{dateStr}</div>
+                  {exportData.streakCount > 0 && <div style={{ color: '#C9A882', fontSize: '11px', fontWeight: '600', whiteSpace: 'nowrap' }}>🔥 {exportData.streakCount}일 연속</div>}
                 </div>
 
                 {/* 명언 + 통계 */}
