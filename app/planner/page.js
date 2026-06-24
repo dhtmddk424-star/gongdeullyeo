@@ -25,6 +25,13 @@ export default function Planner() {
   const [exportData, setExportData] = useState({ quote: '', studyTime: '', showTime: true, selectedDday: null })
   const [cardGoals, setCardGoals] = useState([])
   const [showCardEdit, setShowCardEdit] = useState(false)
+  const [showAddTime, setShowAddTime] = useState(false)
+  const [addTimeFrom, setAddTimeFrom] = useState('09')
+  const [addTimeFromMin, setAddTimeFromMin] = useState('00')
+  const [addTimeTo, setAddTimeTo] = useState('10')
+  const [addTimeToMin, setAddTimeToMin] = useState('00')
+  const [addTimeSubject, setAddTimeSubject] = useState('')
+  const [manualSlots, setManualSlots] = useState({})
   const [sessions, setSessions] = useState([])
   const [subjects, setSubjects] = useState([])
   const [selectedSubject, setSelectedSubject] = useState(null)
@@ -206,6 +213,7 @@ export default function Planner() {
       streakCount: streakNum,
     })
     setCardGoals(goals.map(g => ({ ...g, cardText: g.text })))
+    setManualSlots({})
     setShowExport(true)
   }
 
@@ -479,6 +487,10 @@ export default function Planner() {
             sessionSlots[h][slot] = { subject: s.subject, color }
           }
         })
+        Object.entries(manualSlots).forEach(([h, slots]) => {
+          if (!sessionSlots[Number(h)]) sessionSlots[Number(h)] = {}
+          Object.entries(slots).forEach(([s, v]) => { sessionSlots[Number(h)][Number(s)] = v })
+        })
 
         const Toggle = ({ checked, onChange, label }) => (
           <label style={{ fontSize: '11px', color: '#6B5B45', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
@@ -528,6 +540,55 @@ export default function Planner() {
                   </div>
                 )}
               </div>
+
+              {/* 타임테이블 시간 추가 */}
+              {exportData.design === 2 && (
+                <div style={{ fontSize: '12px', marginBottom: '8px' }}>
+                  <span onClick={() => setShowAddTime(!showAddTime)} style={{ color: '#C9A882', cursor: 'pointer', fontSize: '11px' }}>{showAddTime ? '▾ 타임테이블 시간 추가 접기' : '▸ 타임테이블 시간 추가'}</span>
+                  {showAddTime && (
+                    <div style={{ background: '#FAF7F2', borderRadius: '8px', padding: '8px', marginTop: '4px' }}>
+                      <div style={{ display: 'flex', gap: '4px', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap' }}>
+                        <select value={addTimeFrom} onChange={(e) => setAddTimeFrom(e.target.value)} style={{ padding: '3px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '11px', color: '#4A3728' }}>
+                          {Array.from({ length: 24 }, (_, i) => <option key={i} value={String(i).padStart(2, '0')}>{String(i).padStart(2, '0')}시</option>)}
+                        </select>
+                        <select value={addTimeFromMin} onChange={(e) => setAddTimeFromMin(e.target.value)} style={{ padding: '3px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '11px', color: '#4A3728' }}>
+                          {['00','05','10','15','20','25','30','35','40','45','50','55'].map(m => <option key={m} value={m}>{m}분</option>)}
+                        </select>
+                        <span style={{ fontSize: '10px', color: '#9A8A78' }}>~</span>
+                        <select value={addTimeTo} onChange={(e) => setAddTimeTo(e.target.value)} style={{ padding: '3px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '11px', color: '#4A3728' }}>
+                          {Array.from({ length: 24 }, (_, i) => <option key={i} value={String(i).padStart(2, '0')}>{String(i).padStart(2, '0')}시</option>)}
+                        </select>
+                        <select value={addTimeToMin} onChange={(e) => setAddTimeToMin(e.target.value)} style={{ padding: '3px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '11px', color: '#4A3728' }}>
+                          {['00','05','10','15','20','25','30','35','40','45','50','55'].map(m => <option key={m} value={m}>{m}분</option>)}
+                        </select>
+                      </div>
+                      <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        {subjects.map(s => (
+                          <span key={s.id} onClick={() => setAddTimeSubject(s.name)} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '10px', cursor: 'pointer', background: addTimeSubject === s.name ? s.color : '#fff', color: addTimeSubject === s.name ? '#fff' : s.color, border: `1px solid ${s.color}` }}>{s.name}</span>
+                        ))}
+                        <button onClick={() => {
+                          const sub = subjects.find(s => s.name === addTimeSubject)
+                          const color = sub?.color || '#C9A882'
+                          const fromH = Number(addTimeFrom), fromM = Number(addTimeFromMin)
+                          const toH = Number(addTimeTo), toM = Number(addTimeToMin)
+                          const fromTotal = fromH * 60 + fromM, toTotal = toH * 60 + toM
+                          const newSlots = { ...manualSlots }
+                          for (let m = fromTotal; m < toTotal; m += 5) {
+                            const h = Math.floor(m / 60) % 24
+                            const slot = Math.floor((m % 60) / 5)
+                            if (!newSlots[h]) newSlots[h] = {}
+                            newSlots[h][slot] = { subject: addTimeSubject || '기타', color }
+                          }
+                          setManualSlots(newSlots)
+                        }} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '8px', padding: '4px 10px', fontSize: '10px', cursor: 'pointer' }}>추가</button>
+                        {Object.keys(manualSlots).length > 0 && (
+                          <button onClick={() => setManualSlots({})} style={{ background: 'transparent', color: '#C4B8A8', border: 'none', fontSize: '10px', cursor: 'pointer' }}>초기화</button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* D-day 선택 */}
               {exportData.showDday && ddays.length > 0 && (
