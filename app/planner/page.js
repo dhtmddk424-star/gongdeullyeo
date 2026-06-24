@@ -635,8 +635,8 @@ export default function Planner() {
                   </div>
                   <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
                     {exportData.showTime && (
-                      <div style={{ background: '#F5F0E8', borderRadius: '7px', padding: '5px 9px', textAlign: 'center', minWidth: '44px' }}>
-                        <div style={{ fontSize: '8px', color: '#9A8A78', letterSpacing: '0.5px', marginBottom: '6px' }}>공부 시간</div>
+                      <div style={{ background: '#F5F0E8', borderRadius: '7px', padding: '10px 9px 5px', textAlign: 'center', minWidth: '44px' }}>
+                        <div style={{ fontSize: '8px', color: '#9A8A78', letterSpacing: '0.5px', marginBottom: '3px' }}>공부 시간</div>
                         <div style={{ fontSize: '14px', fontWeight: '700', color: '#4A3728' }}>{exportData.studyTime}</div>
                       </div>
                     )}
