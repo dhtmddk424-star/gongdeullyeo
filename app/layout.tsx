@@ -15,8 +15,25 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "공로그",
-  description: "매일 조금씩, 공로그 쌓아가요",
+  title: { default: "공로그 - 시험준비생을 위한 학습 플래너", template: "%s | 공로그" },
+  description: "공부 플래너, 타이머, 커뮤니티, AI 학습 도우미까지. 시험 준비생을 위한 올인원 학습 관리 웹앱. 수능, 토익, 공무원, 편입 준비생 필수!",
+  keywords: ["공부 플래너", "학습 관리", "수능 플래너", "토익 공부", "공무원 시험", "스터디 타이머", "공부 인증", "학습 커뮤니티", "공로그"],
+  metadataBase: new URL("https://gonglog.vercel.app"),
+  openGraph: {
+    title: "공로그 - 시험준비생을 위한 학습 플래너",
+    description: "공부 플래너, 타이머, 커뮤니티, AI 학습 도우미까지. 시험 준비를 공로그와 함께!",
+    url: "https://gonglog.vercel.app",
+    siteName: "공로그",
+    locale: "ko_KR",
+    type: "website",
+    images: [{ url: "/icon-512.png", width: 512, height: 512, alt: "공로그" }],
+  },
+  twitter: {
+    card: "summary",
+    title: "공로그 - 시험준비생을 위한 학습 플래너",
+    description: "공부 플래너, 타이머, 커뮤니티, AI 학습 도우미까지.",
+    images: ["/icon-512.png"],
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
