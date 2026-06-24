@@ -289,6 +289,8 @@ export default function Planner() {
           <span onClick={() => { setShowCalendar(!showCalendar); if (!showCalendar && user) fetchCalendarData(user.id) }} style={{ fontSize: '20px', cursor: 'pointer' }} title="달력">📅</span>
         </div>
 
+        {isToday && new Date().getHours() < 1 && <p style={{ fontSize: '10px', color: '#C4B8A8', textAlign: 'center', margin: '-8px 0 8px' }}>새벽 1시까지 당일로 집계됩니다</p>}
+
         {/* 달력 (#6) */}
         {showCalendar && (
           <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1.25rem', marginBottom: '16px' }}>

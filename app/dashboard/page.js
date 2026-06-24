@@ -294,7 +294,10 @@ export default function Dashboard() {
 
         {/* 타이머 */}
         <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1.25rem', marginBottom: '12px' }}>
-          <span style={{ fontSize: '13px', color: '#6B5B45', fontWeight: '500', display: 'block', marginBottom: '12px' }}>공부 타이머</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <span style={{ fontSize: '13px', color: '#6B5B45', fontWeight: '500' }}>공부 타이머</span>
+            {new Date().getHours() < 1 && <span style={{ fontSize: '9px', color: '#C4B8A8' }}>새벽 1시까지 당일 집계</span>}
+          </div>
 
           {!timerRunning ? (
             <div>
