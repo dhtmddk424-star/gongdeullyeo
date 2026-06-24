@@ -177,6 +177,10 @@ export default function Planner() {
   }
 
   const openExport = async () => {
+    if (user) {
+      const { data: fb } = await supabase.from('daily_feedback').select('feedback').eq('user_id', user.id).eq('date', selectedDate).single()
+      if (fb?.feedback) setFeedback(fb.feedback)
+    }
     const totalMin = sessions.reduce((s, v) => s + v.duration_minutes, 0)
     const q = getQuoteByDate(selectedDate)
     // fetch streak count
