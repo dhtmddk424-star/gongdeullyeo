@@ -230,7 +230,9 @@ export default function Planner() {
     if (!el) return null
     const html2canvas = (await import('html2canvas')).default
     const rect = el.getBoundingClientRect()
-    return await html2canvas(el, { scale: 3, backgroundColor: '#3A2E22', useCORS: true, width: rect.width, height: rect.height, scrollX: 0, scrollY: -window.scrollY })
+    window.scrollTo(0, 0)
+    await new Promise(r => setTimeout(r, 100))
+    return await html2canvas(el, { scale: 3, backgroundColor: '#3A2E22', useCORS: true, width: rect.width, height: rect.height, scrollX: 0, scrollY: 0, x: 0, y: 0 })
   }
 
   const downloadCard = async () => {
@@ -718,6 +720,7 @@ export default function Planner() {
                   ) : (
                     /* 디자인1: 과목별 체크리스트 */
                     <div style={{ padding: '6px 18px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                      <div style={{ fontSize: '11px', fontWeight: '700', color: '#9A8A78', marginBottom: '4px', letterSpacing: '2px' }}>TASKS</div>
                       <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden' }}>
                         {Object.entries(grouped).sort(([,a],[,b]) => (a.isEtc ? 1 : 0) - (b.isEtc ? 1 : 0)).map(([name, { goals: gList, color }]) => (
                           <div key={name} style={{ marginBottom: '2px' }}>
