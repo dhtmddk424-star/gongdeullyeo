@@ -60,10 +60,20 @@ export default function Report() {
       } else break
     }
 
+    const dailyRates = {}
+    goals.forEach(g => {
+      if (!dailyRates[g.date]) dailyRates[g.date] = { total: 0, done: 0 }
+      dailyRates[g.date].total++
+      if (g.done) dailyRates[g.date].done++
+    })
+    const rates = Object.values(dailyRates).filter(d => d.total > 0).map(d => Math.round((d.done / d.total) * 100))
+    const avgRate = rates.length > 0 ? Math.round(rates.reduce((s, v) => s + v, 0) / rates.length) : 0
+
     setStats({
       totalMinutes: sessions.reduce((s, v) => s + v.duration_minutes, 0),
       totalGoals: goals.length,
       doneGoals: goals.filter(g => g.done).length,
+      avgRate,
       streakDays: streakCount,
       subjects,
     })
@@ -73,7 +83,7 @@ export default function Report() {
     setGenerating(true)
     // AI 리포트 생성 (추후 Anthropic API 연동)
     setTimeout(() => {
-      const pct = stats.totalGoals > 0 ? Math.round((stats.doneGoals / stats.totalGoals) * 100) : 0
+      const pct = stats.avgRate || 0
       const totalHours = (stats.totalMinutes / 60).toFixed(1)
       const topSubject = stats.subjects[0]?.name || '기록 없음'
 
@@ -123,7 +133,7 @@ export default function Report() {
             <div style={{ fontSize: '12px', color: '#9A8A78', marginTop: '4px' }}>총 공부 시간</div>
           </div>
           <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1rem', textAlign: 'center' }}>
-            <div style={{ fontSize: '24px', fontWeight: '600', color: '#C9A882' }}>{stats.totalGoals > 0 ? Math.round((stats.doneGoals / stats.totalGoals) * 100) : 0}%</div>
+            <div style={{ fontSize: '24px', fontWeight: '600', color: '#C9A882' }}>{stats.avgRate || 0}%</div>
             <div style={{ fontSize: '12px', color: '#9A8A78', marginTop: '4px' }}>목표 달성률</div>
           </div>
           <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1rem', textAlign: 'center' }}>
