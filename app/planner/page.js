@@ -24,6 +24,7 @@ export default function Planner() {
   const [showExport, setShowExport] = useState(false)
   const [exportData, setExportData] = useState({ quote: '', studyTime: '', showTime: true, selectedDday: null })
   const [cardGoals, setCardGoals] = useState([])
+  const [showCardEdit, setShowCardEdit] = useState(false)
   const [sessions, setSessions] = useState([])
   const [subjects, setSubjects] = useState([])
   const [selectedSubject, setSelectedSubject] = useState(null)
@@ -236,11 +237,8 @@ export default function Planner() {
       const fileName = `card-${user.id}-${Date.now()}.png`
       await supabase.storage.from('posts').upload(fileName, blob)
       const { data: urlData } = supabase.storage.from('posts').getPublicUrl(fileName)
-      const dateLabel = new Date(selectedDate + 'T00:00:00').toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
-      const text = `${dateLabel} 공부 인증! ${goals.filter(g=>g.done).length}/${goals.length} 완료`
-      await supabase.from('posts').insert({ user_id: user.id, content: text, image_url: urlData.publicUrl, tags: ['인증'] })
       setShowExport(false)
-      router.push('/community')
+      router.push(`/community?image=${encodeURIComponent(urlData.publicUrl)}`)
     }, 'image/png')
   }
 
@@ -511,18 +509,20 @@ export default function Planner() {
                 <Toggle checked={exportData.showFeedback} onChange={(v) => setExportData({...exportData, showFeedback: v})} label="피드백" />
               </div>
 
-              {/* 할일 텍스트 수정 + 블러 */}
-              <div style={{ fontSize: '12px', marginBottom: '10px' }}>
-                <label style={{ color: '#6B5B45', display: 'block', marginBottom: '4px' }}>할일 수정 · 블러: **텍스트** 로 감싸기</label>
-                <div style={{ background: '#FAF7F2', borderRadius: '8px', padding: '8px', maxHeight: '120px', overflow: 'auto' }}>
-                  {cardGoals.map((g, i) => (
-                    <div key={g.id} style={{ display: 'flex', gap: '4px', alignItems: 'center', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '10px', color: g.done ? '#C9A882' : '#D4C8B8' }}>{g.done ? '✓' : '○'}</span>
-                      <input value={g.cardText} onChange={(e) => { const n = [...cardGoals]; n[i] = { ...n[i], cardText: e.target.value }; setCardGoals(n) }} style={{ flex: 1, padding: '3px 6px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '11px', outline: 'none', color: '#4A3728', background: '#fff' }} />
-                    </div>
-                  ))}
-                </div>
-                <div style={{ fontSize: '10px', color: '#C4B8A8', marginTop: '4px' }}>예: 영어 단어 **50개** 암기 → "50개"가 블러됩니다</div>
+              {/* 할일 수정 + 블러 */}
+              <div style={{ fontSize: '12px', marginBottom: '8px' }}>
+                <span onClick={() => setShowCardEdit(!showCardEdit)} style={{ color: '#C9A882', cursor: 'pointer', fontSize: '11px' }}>{showCardEdit ? '▾ 할일 수정/블러 접기' : '▸ 할일 수정/블러 펼치기'}</span>
+                {showCardEdit && (
+                  <div style={{ background: '#FAF7F2', borderRadius: '8px', padding: '6px', marginTop: '4px', maxHeight: '100px', overflow: 'auto' }}>
+                    {cardGoals.map((g, i) => (
+                      <div key={g.id} style={{ display: 'flex', gap: '4px', alignItems: 'center', marginBottom: '3px' }}>
+                        <span style={{ fontSize: '9px', color: g.done ? '#C9A882' : '#D4C8B8' }}>{g.done ? '✓' : '○'}</span>
+                        <input value={g.cardText} onChange={(e) => { const n = [...cardGoals]; n[i] = { ...n[i], cardText: e.target.value }; setCardGoals(n) }} style={{ flex: 1, padding: '2px 4px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '10px', outline: 'none', color: '#4A3728', background: '#fff' }} />
+                      </div>
+                    ))}
+                    <div style={{ fontSize: '9px', color: '#C4B8A8', marginTop: '2px' }}>**텍스트** → 블러 처리</div>
+                  </div>
+                )}
               </div>
 
               {/* D-day 선택 */}
@@ -550,29 +550,29 @@ export default function Planner() {
             </div>
 
             {/* 미리보기 카드 (4:5 비율) */}
-            <div id="card-preview" style={{ background: '#3A2E22', borderRadius: '16px', padding: '16px', fontFamily: 'sans-serif', aspectRatio: '4/5' }}>
-              <div style={{ background: '#FAF7F2', borderRadius: '12px', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div id="card-preview" style={{ background: '#3A2E22', borderRadius: '12px', padding: '12px', fontFamily: 'sans-serif', aspectRatio: '4/5' }}>
+              <div style={{ background: '#FAF7F2', borderRadius: '10px', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
                 {/* 헤더 */}
-                <div style={{ padding: '14px 18px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E8E0D4' }}>
-                  <div style={{ color: '#4A3728', fontSize: '13px', fontWeight: '500' }}>{dateStr}</div>
-                  {exportData.streakCount > 0 && <div style={{ color: '#C9A882', fontSize: '12px', fontWeight: '600' }}>🔥 {exportData.streakCount}일 연속</div>}
+                <div style={{ padding: '10px 14px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E8E0D4' }}>
+                  <div style={{ color: '#4A3728', fontSize: '11px', fontWeight: '500' }}>{dateStr}</div>
+                  {exportData.streakCount > 0 && <div style={{ color: '#C9A882', fontSize: '10px', fontWeight: '600' }}>🔥 {exportData.streakCount}일 연속</div>}
                 </div>
 
                 {/* 명언 + 통계 */}
-                <div style={{ padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '10px', borderBottom: '1.5px solid #E8E0D4' }}>
+                <div style={{ padding: '8px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '8px', borderBottom: '1px solid #E8E0D4' }}>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '10px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '4px' }}>오늘도 공로그</div>
-                    <div style={{ fontSize: '15px', fontWeight: '600', color: '#4A3728', lineHeight: '1.5', wordBreak: 'keep-all', overflowWrap: 'break-word' }}>{exportData.quote}</div>
+                    <div style={{ fontSize: '8px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '2px' }}>오늘도 공로그</div>
+                    <div style={{ fontSize: '12px', fontWeight: '600', color: '#4A3728', lineHeight: '1.4', wordBreak: 'keep-all', overflowWrap: 'break-word' }}>{exportData.quote}</div>
                   </div>
                   <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
                     {exportData.showTime && (
-                      <div style={{ background: '#F5F0E8', borderRadius: '8px', padding: '6px 10px', textAlign: 'center', minWidth: '50px' }}>
+                      <div style={{ background: '#F5F0E8', borderRadius: '6px', padding: '4px 8px', textAlign: 'center', minWidth: '40px' }}>
                         <div style={{ fontSize: '8px', color: '#9A8A78', letterSpacing: '0.5px' }}>공부 시간</div>
                         <div style={{ fontSize: '14px', fontWeight: '700', color: '#4A3728' }}>{exportData.studyTime}</div>
                       </div>
                     )}
                     {exportData.showRate && (
-                      <div style={{ background: '#F5F0E8', borderRadius: '8px', padding: '6px 10px', textAlign: 'center', minWidth: '50px' }}>
+                      <div style={{ background: '#F5F0E8', borderRadius: '6px', padding: '4px 8px', textAlign: 'center', minWidth: '40px' }}>
                         <div style={{ fontSize: '8px', color: '#9A8A78', letterSpacing: '0.5px' }}>달성률</div>
                         <div style={{ fontSize: '14px', fontWeight: '700', color: '#4A3728' }}>{pct}%</div>
                       </div>
@@ -594,20 +594,20 @@ export default function Planner() {
                     <div style={{ display: 'flex', flex: 1 }}>
                       {/* 왼쪽: TASKS + 피드백 */}
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ padding: '12px 14px', flex: 1, overflow: 'hidden' }}>
-                          <div style={{ fontSize: '11px', fontWeight: '700', color: '#9A8A78', marginBottom: '8px', letterSpacing: '2px' }}>TASKS</div>
+                        <div style={{ padding: '8px 10px', flex: 1, overflow: 'hidden' }}>
+                          <div style={{ fontSize: '9px', fontWeight: '700', color: '#9A8A78', marginBottom: '4px', letterSpacing: '2px' }}>TASKS</div>
                           {Object.entries(grouped).map(([name, { goals: gList, color }]) => (
-                            <div key={name} style={{ marginBottom: '10px' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px', background: color + '15', borderLeft: `3px solid ${color}`, marginBottom: '4px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: color }} />
-                                  <span style={{ fontSize: '12px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
+                            <div key={name} style={{ marginBottom: '5px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '2px 6px', background: color + '15', borderLeft: `2px solid ${color}`, marginBottom: '2px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                  <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: color }} />
+                                  <span style={{ fontSize: '10px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
                                 </div>
-                                <span style={{ fontSize: '11px', fontWeight: '600', color }}>{gList.filter(g=>g.done).length}/{gList.length}</span>
+                                <span style={{ fontSize: '9px', fontWeight: '600', color }}>{gList.filter(g=>g.done).length}/{gList.length}</span>
                               </div>
                               {gList.map(g => (
-                                <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '3px 0', fontSize: '11px' }}>
-                                  <span style={{ width: '14px', height: '14px', borderRadius: '3px', background: g.done ? color : '#fff', border: g.done ? 'none' : `1px solid ${color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#fff', flexShrink: 0 }}>{g.done && '✓'}</span>
+                                <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '1px 0', fontSize: '10px' }}>
+                                  <span style={{ width: '12px', height: '12px', borderRadius: '2px', background: g.done ? color : '#fff', border: g.done ? 'none' : `1px solid ${color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', color: '#fff', flexShrink: 0 }}>{g.done && '✓'}</span>
                                   <span style={{ color: g.done ? '#C4B8A8' : '#4A3728', textDecoration: g.done ? 'line-through' : 'none' }}>{renderBlurText(g.cardText || g.text)}</span>
                                 </div>
                               ))}
@@ -624,8 +624,8 @@ export default function Planner() {
                       {/* 세로 구분선 - 전체 높이 */}
                       <div style={{ width: '1px', background: '#E8E0D4', alignSelf: 'stretch' }} />
                       {/* 오른쪽: TIMETABLE */}
-                      <div style={{ width: '110px', flexShrink: 0, display: 'flex', flexDirection: 'column', padding: '12px 10px' }}>
-                        <div style={{ fontSize: '11px', fontWeight: '700', color: '#9A8A78', marginBottom: '6px', letterSpacing: '2px' }}>TIME TABLE</div>
+                      <div style={{ width: '100px', flexShrink: 0, display: 'flex', flexDirection: 'column', padding: '8px 8px' }}>
+                        <div style={{ fontSize: '9px', fontWeight: '700', color: '#9A8A78', marginBottom: '4px', letterSpacing: '1px', textAlign: 'right' }}>TIME TABLE</div>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1px' }}>
                         {Array.from({ length: 19 }, (_, i) => (i + 7) % 24).map(h => {
                           const slots = sessionSlots[h] || {}
@@ -681,8 +681,8 @@ export default function Planner() {
                 </div>
 
                 {/* 하단 */}
-                <div style={{ padding: '6px 18px 10px', textAlign: 'right' }}>
-                  <span style={{ fontSize: '12px', fontWeight: '700', color: '#C9A882', letterSpacing: '1px' }}>공로그</span>
+                <div style={{ padding: '4px 14px 6px', textAlign: 'right' }}>
+                  <span style={{ fontSize: '10px', fontWeight: '700', color: '#C9A882', letterSpacing: '1px' }}>공로그</span>
                 </div>
               </div>
             </div>

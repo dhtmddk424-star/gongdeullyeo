@@ -52,6 +52,8 @@ function Community() {
       }
       const postParam = searchParams.get('post')
       if (postParam) setNewPost(postParam)
+      const imageParam = searchParams.get('image')
+      if (imageParam) setImagePreview(imageParam)
       fetchAnnouncements()
       fetchPosts()
     }
@@ -203,6 +205,8 @@ function Community() {
         const { data } = supabase.storage.from('posts').getPublicUrl(fileName)
         image_url = data.publicUrl
       }
+    } else if (imagePreview && imagePreview.startsWith('http')) {
+      image_url = imagePreview
     }
     const { data } = await supabase.from('posts').insert({ user_id: user.id, content: newPost, image_url, tags }).select()
     if (data) {
