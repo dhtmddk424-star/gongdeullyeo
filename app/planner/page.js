@@ -229,15 +229,20 @@ export default function Planner() {
     const el = document.getElementById('card-preview')
     if (!el) return null
     const html2canvas = (await import('html2canvas')).default
-    const clone = el.cloneNode(true)
-    clone.style.position = 'fixed'
-    clone.style.top = '0'
-    clone.style.left = '0'
-    clone.style.zIndex = '-9999'
-    document.body.appendChild(clone)
-    const canvas = await html2canvas(clone, { scale: 3, backgroundColor: '#3A2E22', useCORS: true })
-    document.body.removeChild(clone)
-    return canvas
+    const rect = el.getBoundingClientRect()
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft
+    return await html2canvas(el, {
+      scale: 3,
+      backgroundColor: '#3A2E22',
+      useCORS: true,
+      x: rect.left + scrollLeft,
+      y: rect.top + scrollTop,
+      width: rect.width,
+      height: rect.height,
+      windowWidth: document.documentElement.scrollWidth,
+      windowHeight: document.documentElement.scrollHeight,
+    })
   }
 
   const downloadCard = async () => {
@@ -710,10 +715,10 @@ export default function Planner() {
                           return (
                             <div key={h} style={{ display: 'flex', alignItems: 'center', gap: '3px', flex: 1 }}>
                               <span style={{ width: '14px', color: '#C4B8A8', textAlign: 'right', fontSize: '9px', flexShrink: 0 }}>{String(h).padStart(2, '0')}</span>
-                              <div style={{ flex: 1, height: '100%', display: 'flex', gap: '0px' }}>
+                              <div style={{ flex: 1, height: '100%', borderRadius: '2px', overflow: 'hidden', display: 'flex' }}>
                                 {Array.from({ length: 12 }, (_, s) => {
                                   const slot = slots[s]
-                                  return <div key={s} style={{ flex: 1, background: slot ? slot.color : '#F0EAE0', borderRadius: s === 0 ? '2px 0 0 2px' : s === 11 ? '0 2px 2px 0' : '0' }} />
+                                  return <div key={s} style={{ flex: 1, background: slot ? slot.color : '#F0EAE0' }} />
                                 })}
                               </div>
                             </div>
