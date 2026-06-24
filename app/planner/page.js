@@ -621,16 +621,16 @@ export default function Planner() {
             <div id="card-preview" style={{ background: '#3A2E22', borderRadius: '14px', padding: '14px', fontFamily: 'sans-serif', width: '440px', height: '550px', margin: '0 auto' }}>
               <div style={{ background: '#FAF7F2', borderRadius: '11px', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
                 {/* 헤더 */}
-                <div style={{ padding: '12px 18px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E8E0D4' }}>
-                  <div style={{ color: '#4A3728', fontSize: '13px', fontWeight: '500' }}>{dateStr}</div>
-                  {exportData.streakCount > 0 && <div style={{ color: '#C9A882', fontSize: '13px', fontWeight: '600' }}>🔥 {exportData.streakCount}일 연속</div>}
+                <div style={{ padding: '8px 16px 6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E8E0D4' }}>
+                  <div style={{ color: '#4A3728', fontSize: '11px', fontWeight: '500' }}>{dateStr}</div>
+                  {exportData.streakCount > 0 && <div style={{ color: '#C9A882', fontSize: '11px', fontWeight: '600' }}>🔥 {exportData.streakCount}일 연속</div>}
                 </div>
 
                 {/* 명언 + 통계 */}
-                <div style={{ padding: '10px 18px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '10px', borderBottom: '1px solid #E8E0D4' }}>
+                <div style={{ padding: '6px 16px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '8px', borderBottom: '1px solid #E8E0D4' }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: '11px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '3px' }}>오늘도 공로그</div>
-                    <div style={{ fontSize: '16px', fontWeight: '600', color: '#4A3728', lineHeight: '1.4', wordBreak: 'keep-all', overflowWrap: 'break-word' }}>{exportData.quote}</div>
+                    <div style={{ fontSize: '14px', fontWeight: '600', color: '#4A3728', lineHeight: '1.4', wordBreak: 'keep-all', overflowWrap: 'break-word' }}>{exportData.quote}</div>
                   </div>
                   <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
                     {exportData.showTime && (
@@ -669,13 +669,13 @@ export default function Planner() {
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1px 8px', background: color + '12', borderLeft: `2.5px solid ${color}`, marginBottom: '2px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                   <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: color }} />
-                                  <span style={{ fontSize: '12px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
+                                  <span style={{ fontSize: '11px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
                                 </div>
-                                <span style={{ fontSize: '11px', fontWeight: '600', color }}>{gList.filter(g=>g.done).length}/{gList.length}</span>
+                                <span style={{ fontSize: '10px', fontWeight: '600', color }}>{gList.filter(g=>g.done).length}/{gList.length}</span>
                               </div>
                               {gList.map(g => (
-                                <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '2px 0', fontSize: '12px' }}>
-                                  <span style={{ width: '15px', height: '15px', borderRadius: '3px', background: g.done ? color : '#fff', border: g.done ? 'none' : `1px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#fff', flexShrink: 0 }}>{g.done && '✓'}</span>
+                                <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '1px 0', fontSize: '11px' }}>
+                                  <span style={{ width: '13px', height: '13px', borderRadius: '2px', background: g.done ? color : '#fff', border: g.done ? 'none' : `1px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#fff', flexShrink: 0 }}>{g.done && '✓'}</span>
                                   <span style={{ color: g.done ? '#C4B8A8' : '#4A3728', textDecoration: g.done ? 'line-through' : 'none' }}>{renderBlurText(g.cardText || g.text)}</span>
                                 </div>
                               ))}
@@ -724,13 +724,13 @@ export default function Planner() {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1px 8px', background: color + '12', borderLeft: `2.5px solid ${color}`, marginBottom: '2px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                 <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: color }} />
-                                <span style={{ fontSize: '12px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
+                                <span style={{ fontSize: '11px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
                               </div>
-                              <span style={{ fontSize: '11px', fontWeight: '600', color }}>{gList.filter(g=>g.done).length}/{gList.length}</span>
+                              <span style={{ fontSize: '10px', fontWeight: '600', color }}>{gList.filter(g=>g.done).length}/{gList.length}</span>
                             </div>
                             {gList.map(g => (
-                              <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '2px 0', fontSize: '12px' }}>
-                                <span style={{ width: '15px', height: '15px', borderRadius: '3px', background: g.done ? color : '#fff', border: g.done ? 'none' : `1px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#fff', flexShrink: 0 }}>{g.done && '✓'}</span>
+                              <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '1px 0', fontSize: '11px' }}>
+                                <span style={{ width: '13px', height: '13px', borderRadius: '2px', background: g.done ? color : '#fff', border: g.done ? 'none' : `1px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#fff', flexShrink: 0 }}>{g.done && '✓'}</span>
                                 <span style={{ color: g.done ? '#C4B8A8' : '#4A3728', textDecoration: g.done ? 'line-through' : 'none', flex: 1 }}>{renderBlurText(g.cardText || g.text)}</span>
                               </div>
                             ))}
