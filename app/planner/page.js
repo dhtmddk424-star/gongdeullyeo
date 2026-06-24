@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
-import { getTodayQuote } from '../../lib/quotes'
+import { getTodayQuote, getQuoteByDate } from '../../lib/quotes'
 import { getToday } from '../../lib/today'
 import Nav from '../components/Nav'
 
@@ -178,7 +178,7 @@ export default function Planner() {
 
   const openExport = async () => {
     const totalMin = sessions.reduce((s, v) => s + v.duration_minutes, 0)
-    const q = getTodayQuote()
+    const q = getQuoteByDate(selectedDate)
     // fetch streak count
     let streakNum = 0
     if (user) {
