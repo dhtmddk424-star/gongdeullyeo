@@ -12,6 +12,11 @@ export async function POST(req) {
     if (!inviter) return NextResponse.json({ error: '존재하지 않는 초대코드입니다.' }, { status: 404 })
     if (inviter.id === inviteeId) return NextResponse.json({ error: '본인의 초대코드는 사용할 수 없어요.' }, { status: 400 })
 
+    const { data: inviteeProfile } = await supabase.from('profiles').select('created_at').eq('id', inviteeId).single()
+    if (inviteeProfile && (Date.now() - new Date(inviteeProfile.created_at).getTime()) > 3600000) {
+      return NextResponse.json({ error: '가입 후 1시간 이내에만 초대코드를 입력할 수 있어요.' }, { status: 400 })
+    }
+
     const { data: existing } = await supabase.from('referrals').select('id').eq('invitee_id', inviteeId).single()
     if (existing) return NextResponse.json({ error: '이미 초대코드를 사용했어요.' }, { status: 400 })
 
@@ -20,8 +25,8 @@ export async function POST(req) {
     await supabase.from('profiles').update({ credits: (inviter.credits || 0) + 1000 }).eq('id', inviter.id)
     await supabase.from('credit_history').insert({ user_id: inviter.id, amount: 1000, type: 'referral', description: '친구 초대 보상' })
 
-    const { data: inviteeProfile } = await supabase.from('profiles').select('credits').eq('id', inviteeId).single()
-    await supabase.from('profiles').update({ credits: (inviteeProfile?.credits || 0) + 1000 }).eq('id', inviteeId)
+    const { data: inviteeCredits } = await supabase.from('profiles').select('credits').eq('id', inviteeId).single()
+    await supabase.from('profiles').update({ credits: (inviteeCredits?.credits || 0) + 1000 }).eq('id', inviteeId)
     await supabase.from('credit_history').insert({ user_id: inviteeId, amount: 1000, type: 'referral', description: '초대코드 입력 보상' })
 
     return NextResponse.json({ success: true, message: '1,000 크레딧이 적립되었어요!' })
