@@ -636,18 +636,14 @@ export default function Planner() {
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1px' }}>
                         {Array.from({ length: 19 }, (_, i) => (i + 7) % 24).map(h => {
                           const slots = sessionSlots[h] || {}
-                          const filledCount = Object.keys(slots).length
-                          const mainSlot = Object.values(slots)[0]
-                          const fillPct = Math.round((filledCount / 12) * 100)
                           return (
                             <div key={h} style={{ display: 'flex', alignItems: 'center', gap: '3px', flex: 1 }}>
                               <span style={{ width: '14px', color: '#C4B8A8', textAlign: 'right', fontSize: '9px', flexShrink: 0 }}>{String(h).padStart(2, '0')}</span>
-                              <div style={{ flex: 1, height: '100%', borderRadius: '2px', background: '#F0EAE0', overflow: 'hidden', position: 'relative' }}>
-                                {fillPct > 0 && mainSlot && (
-                                  <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${fillPct}%`, background: mainSlot.color, borderRadius: '2px', display: 'flex', alignItems: 'center', paddingLeft: '3px' }}>
-                                    {fillPct > 30 && <span style={{ fontSize: '7px', color: '#fff', fontWeight: '500' }}>{mainSlot.subject}</span>}
-                                  </div>
-                                )}
+                              <div style={{ flex: 1, height: '100%', display: 'flex', gap: '0px' }}>
+                                {Array.from({ length: 12 }, (_, s) => {
+                                  const slot = slots[s]
+                                  return <div key={s} style={{ flex: 1, background: slot ? slot.color : '#F0EAE0', borderRadius: s === 0 ? '2px 0 0 2px' : s === 11 ? '0 2px 2px 0' : '0' }} />
+                                })}
                               </div>
                             </div>
                           )
