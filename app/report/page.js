@@ -66,16 +66,30 @@ export default function Report() {
       dailyRates[g.date].total++
       if (g.done) dailyRates[g.date].done++
     })
-    const rates = Object.values(dailyRates).filter(d => d.total > 0).map(d => Math.round((d.done / d.total) * 100))
+    const rates = Object.values(dailyRates).filter(d => d.total > 0 && d.done > 0).map(d => Math.round((d.done / d.total) * 100))
     const avgRate = rates.length > 0 ? Math.round(rates.reduce((s, v) => s + v, 0) / rates.length) : 0
 
+    const dailyStudy = {}
+    sessions.forEach(s => { dailyStudy[s.date] = (dailyStudy[s.date] || 0) + s.duration_minutes })
+    const dailyData = Object.entries({ ...dailyRates, ...Object.fromEntries(Object.keys(dailyStudy).map(k => [k, dailyRates[k] || { total: 0, done: 0 }])) })
+      .map(([date, r]) => ({ date, rate: r.total > 0 ? Math.round((r.done / r.total) * 100) : 0, minutes: dailyStudy[date] || 0, total: r.total, done: r.done }))
+      .sort((a, b) => a.date.localeCompare(b.date))
+    const activeDays = dailyData.filter(d => d.minutes > 0 || d.done > 0).length
+    const avgDailyMin = activeDays > 0 ? Math.round(sessions.reduce((s, v) => s + v.duration_minutes, 0) / activeDays) : 0
+    const bestDay = dailyData.reduce((best, d) => d.minutes > (best?.minutes || 0) ? d : best, null)
+    const totalMin = sessions.reduce((s, v) => s + v.duration_minutes, 0)
+
     setStats({
-      totalMinutes: sessions.reduce((s, v) => s + v.duration_minutes, 0),
+      totalMinutes: totalMin,
       totalGoals: goals.length,
       doneGoals: goals.filter(g => g.done).length,
       avgRate,
       streakDays: streakCount,
       subjects,
+      dailyData,
+      activeDays,
+      avgDailyMin,
+      bestDay,
     })
   }
 
@@ -115,7 +129,7 @@ export default function Report() {
           <h1 style={{ fontSize: '22px', fontWeight: '500', color: '#4A3728' }}>AI 학습 리포트</h1>
           <span style={{ background: '#C9A882', color: '#fff', fontSize: '11px', padding: '2px 8px', borderRadius: '10px' }}>프리미엄</span>
         </div>
-        <p style={{ fontSize: '14px', color: '#9A8A78', marginBottom: '1.5rem' }}>AI가 학습 데이터를 분석하고 방향을 제안해요</p>
+        <p style={{ fontSize: '14px', color: '#9A8A78', marginBottom: '1.5rem' }}>학습 데이터를 분석하고 방향을 제안해요</p>
 
         {/* 탭 */}
         <div style={{ display: 'flex', gap: '8px', marginBottom: '1.5rem' }}>
@@ -126,41 +140,104 @@ export default function Report() {
           ))}
         </div>
 
-        {/* 통계 카드 */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-          <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1rem', textAlign: 'center' }}>
-            <div style={{ fontSize: '24px', fontWeight: '600', color: '#C9A882' }}>{(stats.totalMinutes / 60).toFixed(1)}h</div>
-            <div style={{ fontSize: '12px', color: '#9A8A78', marginTop: '4px' }}>총 공부 시간</div>
+        {/* 핵심 통계 */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '16px' }}>
+          <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '12px', textAlign: 'center' }}>
+            <div style={{ fontSize: '22px', fontWeight: '600', color: '#C9A882' }}>{stats.totalMinutes >= 60 ? `${Math.floor(stats.totalMinutes/60)}H` : `${stats.totalMinutes}M`}</div>
+            <div style={{ fontSize: '11px', color: '#9A8A78', marginTop: '2px' }}>총 공부시간</div>
           </div>
-          <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1rem', textAlign: 'center' }}>
-            <div style={{ fontSize: '24px', fontWeight: '600', color: '#C9A882' }}>{stats.avgRate || 0}%</div>
-            <div style={{ fontSize: '12px', color: '#9A8A78', marginTop: '4px' }}>목표 달성률</div>
+          <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '12px', textAlign: 'center' }}>
+            <div style={{ fontSize: '22px', fontWeight: '600', color: '#C9A882' }}>{stats.avgRate || 0}%</div>
+            <div style={{ fontSize: '11px', color: '#9A8A78', marginTop: '2px' }}>평균 달성률</div>
           </div>
-          <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1rem', textAlign: 'center' }}>
-            <div style={{ fontSize: '24px', fontWeight: '600', color: '#C9A882' }}>{stats.streakDays}일</div>
-            <div style={{ fontSize: '12px', color: '#9A8A78', marginTop: '4px' }}>연속 출석</div>
-          </div>
-          <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1rem', textAlign: 'center' }}>
-            <div style={{ fontSize: '24px', fontWeight: '600', color: '#C9A882' }}>{stats.subjects.length}</div>
-            <div style={{ fontSize: '12px', color: '#9A8A78', marginTop: '4px' }}>과목 수</div>
+          <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '12px', textAlign: 'center' }}>
+            <div style={{ fontSize: '22px', fontWeight: '600', color: '#C9A882' }}>{stats.streakDays}일</div>
+            <div style={{ fontSize: '11px', color: '#9A8A78', marginTop: '2px' }}>연속 출석</div>
           </div>
         </div>
 
-        {/* 과목별 시간 */}
+        {/* 추가 통계 */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '16px' }}>
+          <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '12px', textAlign: 'center' }}>
+            <div style={{ fontSize: '18px', fontWeight: '600', color: '#4A3728' }}>{stats.activeDays || 0}일</div>
+            <div style={{ fontSize: '11px', color: '#9A8A78', marginTop: '2px' }}>공부한 날</div>
+          </div>
+          <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '12px', textAlign: 'center' }}>
+            <div style={{ fontSize: '18px', fontWeight: '600', color: '#4A3728' }}>{stats.avgDailyMin >= 60 ? `${Math.floor(stats.avgDailyMin/60)}H ${stats.avgDailyMin%60}M` : `${stats.avgDailyMin || 0}M`}</div>
+            <div style={{ fontSize: '11px', color: '#9A8A78', marginTop: '2px' }}>일평균</div>
+          </div>
+          <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '12px', textAlign: 'center' }}>
+            <div style={{ fontSize: '18px', fontWeight: '600', color: '#4A3728' }}>{stats.subjects.length}과목</div>
+            <div style={{ fontSize: '11px', color: '#9A8A78', marginTop: '2px' }}>학습 과목</div>
+          </div>
+        </div>
+
+        {/* 일별 공부시간 차트 */}
+        {stats.dailyData && stats.dailyData.length > 0 && (
+          <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1.25rem', marginBottom: '16px' }}>
+            <span style={{ fontSize: '13px', color: '#6B5B45', fontWeight: '500', display: 'block', marginBottom: '12px' }}>일별 공부 시간</span>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '80px', gap: '6px' }}>
+              {stats.dailyData.map((d, i) => {
+                const max = Math.max(...stats.dailyData.map(x => x.minutes), 1)
+                const dayName = new Date(d.date + 'T00:00:00').toLocaleDateString('ko-KR', { weekday: 'short' })
+                return (
+                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                    <span style={{ fontSize: '9px', color: '#9A8A78' }}>{d.minutes > 0 ? (d.minutes >= 60 ? `${Math.floor(d.minutes/60)}H` : `${d.minutes}M`) : ''}</span>
+                    <div style={{ width: '100%', background: d.minutes > 0 ? '#C9A882' : '#F0EAE0', borderRadius: '3px 3px 0 0', height: `${Math.max(4, (d.minutes / max) * 60)}px` }} />
+                    <span style={{ fontSize: '10px', color: '#6B5B45' }}>{dayName}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* 일별 달성률 추이 */}
+        {stats.dailyData && stats.dailyData.filter(d => d.total > 0).length > 0 && (
+          <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1.25rem', marginBottom: '16px' }}>
+            <span style={{ fontSize: '13px', color: '#6B5B45', fontWeight: '500', display: 'block', marginBottom: '12px' }}>일별 목표 달성률</span>
+            {stats.dailyData.filter(d => d.total > 0).map((d, i) => {
+              const dayName = new Date(d.date + 'T00:00:00').toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', weekday: 'short' })
+              return (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '11px', color: '#9A8A78', width: '80px', flexShrink: 0 }}>{dayName}</span>
+                  <div style={{ flex: 1, background: '#F0EAE0', borderRadius: '3px', height: '8px' }}>
+                    <div style={{ background: d.rate >= 80 ? '#8BA88E' : d.rate >= 50 ? '#C9A882' : '#C4869B', borderRadius: '3px', height: '8px', width: `${d.rate}%` }} />
+                  </div>
+                  <span style={{ fontSize: '11px', color: '#4A3728', fontWeight: '500', width: '35px', textAlign: 'right' }}>{d.rate}%</span>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* 과목별 시간 + 비율 */}
         {stats.subjects.length > 0 && (
           <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1.25rem', marginBottom: '16px' }}>
             <span style={{ fontSize: '13px', color: '#6B5B45', fontWeight: '500', display: 'block', marginBottom: '12px' }}>과목별 공부 시간</span>
-            {stats.subjects.map((s, i) => (
-              <div key={i} style={{ marginBottom: '10px' }}>
+            {stats.subjects.map((s, i) => {
+              const pctOfTotal = stats.totalMinutes > 0 ? Math.round((s.minutes / stats.totalMinutes) * 100) : 0
+              return (
+              <div key={i} style={{ marginBottom: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '4px' }}>
                   <span style={{ color: '#4A3728' }}>{s.name}</span>
-                  <span style={{ color: '#C9A882' }}>{s.minutes}분</span>
+                  <span style={{ color: '#C9A882' }}>{s.minutes >= 60 ? `${Math.floor(s.minutes/60)}H ${s.minutes%60}M` : `${s.minutes}M`} ({pctOfTotal}%)</span>
                 </div>
                 <div style={{ background: '#F0EAE0', borderRadius: '3px', height: '6px' }}>
                   <div style={{ background: '#C9A882', borderRadius: '3px', height: '6px', width: `${(s.minutes / stats.subjects[0].minutes) * 100}%` }} />
                 </div>
               </div>
-            ))}
+            )})}
+          </div>
+        )}
+
+        {/* 최고 기록 */}
+        {stats.bestDay && stats.bestDay.minutes > 0 && (
+          <div style={{ background: '#FFF8EE', borderRadius: '12px', border: '1px solid #E8D9C8', padding: '1rem', marginBottom: '16px', textAlign: 'center' }}>
+            <div style={{ fontSize: '11px', color: '#C9A882', fontWeight: '600', marginBottom: '4px' }}>🏆 이번 주 최고 기록</div>
+            <div style={{ fontSize: '14px', color: '#4A3728', fontWeight: '500' }}>
+              {new Date(stats.bestDay.date + 'T00:00:00').toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })} — {stats.bestDay.minutes >= 60 ? `${Math.floor(stats.bestDay.minutes/60)}H ${stats.bestDay.minutes%60}M` : `${stats.bestDay.minutes}M`}
+            </div>
           </div>
         )}
 

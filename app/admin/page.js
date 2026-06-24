@@ -117,28 +117,35 @@ export default function Admin() {
         {tab === 'credits' && (
           <div>
             {/* 전체 요약 */}
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
-              <div style={{ flex: 1, background: '#fff', borderRadius: '10px', border: '0.5px solid #E8E0D4', padding: '12px', textAlign: 'center' }}>
-                <div style={{ fontSize: '20px', fontWeight: '600', color: '#C9A882' }}>{users.reduce((s, u) => s + (u.credits || 0), 0).toLocaleString()}원</div>
-                <div style={{ fontSize: '11px', color: '#9A8A78', marginTop: '2px' }}>총 발행 크레딧</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '16px' }}>
+              <div style={{ background: '#fff', borderRadius: '10px', border: '0.5px solid #E8E0D4', padding: '12px', textAlign: 'center' }}>
+                <div style={{ fontSize: '18px', fontWeight: '600', color: '#C9A882' }}>{users.reduce((s, u) => s + (u.credits || 0), 0).toLocaleString()}원</div>
+                <div style={{ fontSize: '10px', color: '#9A8A78', marginTop: '2px' }}>총 발행</div>
               </div>
-              <div style={{ flex: 1, background: '#fff', borderRadius: '10px', border: '0.5px solid #E8E0D4', padding: '12px', textAlign: 'center' }}>
-                <div style={{ fontSize: '20px', fontWeight: '600', color: '#C9A882' }}>{referrals.length}</div>
-                <div style={{ fontSize: '11px', color: '#9A8A78', marginTop: '2px' }}>총 초대 건수</div>
+              <div style={{ background: '#fff', borderRadius: '10px', border: '0.5px solid #E8E0D4', padding: '12px', textAlign: 'center' }}>
+                <div style={{ fontSize: '18px', fontWeight: '600', color: '#C9A882' }}>{referrals.length}건</div>
+                <div style={{ fontSize: '10px', color: '#9A8A78', marginTop: '2px' }}>초대 성공</div>
+              </div>
+              <div style={{ background: '#fff', borderRadius: '10px', border: '0.5px solid #E8E0D4', padding: '12px', textAlign: 'center' }}>
+                <div style={{ fontSize: '18px', fontWeight: '600', color: '#C9A882' }}>{users.length > 0 ? Math.round((referrals.length / users.length) * 100) : 0}%</div>
+                <div style={{ fontSize: '10px', color: '#9A8A78', marginTop: '2px' }}>초대 전환율</div>
               </div>
             </div>
 
-            {/* 유저별 크레딧 */}
+            {/* 전체 회원 크레딧 */}
             <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', overflow: 'hidden', marginBottom: '16px' }}>
-              <div style={{ padding: '12px 16px', borderBottom: '0.5px solid #F0EAE0', fontSize: '13px', color: '#6B5B45', fontWeight: '500' }}>유저별 크레딧</div>
-              {users.filter(u => u.credits > 0).length === 0 && <p style={{ fontSize: '12px', color: '#C4B8A8', textAlign: 'center', padding: '16px' }}>크레딧 보유자가 없어요</p>}
-              {users.filter(u => u.credits > 0).map((u, i) => (
-                <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', borderBottom: '0.5px solid #F0EAE0' }}>
+              <div style={{ padding: '12px 16px', borderBottom: '0.5px solid #F0EAE0', fontSize: '13px', color: '#6B5B45', fontWeight: '500' }}>회원별 크레딧</div>
+              {users.map((u, i) => (
+                <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', borderBottom: i < users.length - 1 ? '0.5px solid #F0EAE0' : 'none' }}>
                   <div>
                     <span style={{ fontSize: '13px', color: '#4A3728' }}>{u.email}</span>
                     {u.nickname && <span style={{ fontSize: '11px', color: '#9A8A78', marginLeft: '6px' }}>({u.nickname})</span>}
+                    {u.role === 'admin' && <span style={{ fontSize: '9px', color: '#C9A882', marginLeft: '4px', border: '0.5px solid #C9A882', borderRadius: '4px', padding: '0 3px' }}>관리자</span>}
                   </div>
-                  <span style={{ fontSize: '14px', fontWeight: '600', color: '#C9A882' }}>{(u.credits || 0).toLocaleString()}원</span>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '14px', fontWeight: '600', color: (u.credits || 0) > 0 ? '#C9A882' : '#D4C8B8' }}>{(u.credits || 0).toLocaleString()}원</div>
+                    <div style={{ fontSize: '9px', color: '#C4B8A8' }}>{u.referral_code}</div>
+                  </div>
                 </div>
               ))}
             </div>
