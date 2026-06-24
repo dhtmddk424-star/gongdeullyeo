@@ -619,7 +619,7 @@ export default function Planner() {
                           ))}
                         </div>
                         {exportData.showFeedback && feedback && (
-                          <div style={{ padding: '6px 14px 4px', flexShrink: 0 }}>
+                          <div style={{ padding: '6px 14px 4px', flexShrink: 0, borderTop: '1px solid #E8E0D4' }}>
                             <div style={{ fontSize: '10px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '2px' }}>오늘의 피드백</div>
                             <div style={{ fontSize: '12px', color: '#4A3728', lineHeight: '1.4', fontStyle: 'italic' }}>"{feedback}"</div>
                           </div>
