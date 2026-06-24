@@ -534,6 +534,7 @@ export default function Planner() {
                 <span onClick={() => setShowCardEdit(!showCardEdit)} style={{ color: '#C9A882', cursor: 'pointer', fontSize: '11px' }}>{showCardEdit ? '▾ 할일 수정/블러 접기' : '▸ 할일 수정/블러 펼치기'}</span>
                 {showCardEdit && (
                   <div style={{ background: '#FAF7F2', borderRadius: '8px', padding: '6px', marginTop: '4px', maxHeight: '120px', overflow: 'auto' }}>
+                    <div style={{ fontSize: '9px', color: '#C4B8A8', marginBottom: '4px' }}>텍스트 드래그 후 [블러] 클릭</div>
                     {cardGoals.map((g, i) => (
                       <div key={g.id} style={{ display: 'flex', gap: '4px', alignItems: 'center', marginBottom: '3px' }}>
                         <span style={{ fontSize: '9px', color: g.done ? '#C9A882' : '#D4C8B8' }}>{g.done ? '✓' : '○'}</span>
@@ -556,7 +557,6 @@ export default function Planner() {
                         }} style={{ fontSize: '10px', color: '#C9A882', cursor: 'pointer', flexShrink: 0, padding: '1px 4px', border: '0.5px solid #C9A882', borderRadius: '4px' }}>블러</span>
                       </div>
                     ))}
-                    <div style={{ fontSize: '9px', color: '#C4B8A8', marginTop: '2px' }}>텍스트 드래그 후 [블러] 클릭</div>
                   </div>
                 )}
               </div>
