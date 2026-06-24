@@ -398,14 +398,14 @@ export default function Dashboard() {
                 <div style={{ background: '#FAF7F2', borderRadius: '8px', padding: '8px', marginTop: '4px' }}>
                   <div style={{ display: 'flex', gap: '4px', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap' }}>
                     <select value={addSessFromH} onChange={(e) => setAddSessFromH(e.target.value)} style={{ padding: '3px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '11px', color: '#4A3728' }}>
-                      {[6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,0,1,2,3].map(h => <option key={h} value={String(h).padStart(2,'0')}>{String(h).padStart(2,'0')}시</option>)}
+                      {[3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,0,1,2].map(h => <option key={h} value={String(h).padStart(2,'0')}>{String(h).padStart(2,'0')}시</option>)}
                     </select>
                     <select value={addSessFromM} onChange={(e) => setAddSessFromM(e.target.value)} style={{ padding: '3px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '11px', color: '#4A3728' }}>
                       {['00','10','20','30','40','50'].map(m => <option key={m} value={m}>{m}분</option>)}
                     </select>
                     <span style={{ fontSize: '10px', color: '#9A8A78' }}>~</span>
                     <select value={addSessToH} onChange={(e) => setAddSessToH(e.target.value)} style={{ padding: '3px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '11px', color: '#4A3728' }}>
-                      {[6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,0,1,2,3].map(h => <option key={h} value={String(h).padStart(2,'0')}>{String(h).padStart(2,'0')}시</option>)}
+                      {[3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,0,1,2].map(h => <option key={h} value={String(h).padStart(2,'0')}>{String(h).padStart(2,'0')}시</option>)}
                     </select>
                     <select value={addSessToM} onChange={(e) => setAddSessToM(e.target.value)} style={{ padding: '3px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '11px', color: '#4A3728' }}>
                       {['00','10','20','30','40','50'].map(m => <option key={m} value={m}>{m}분</option>)}
