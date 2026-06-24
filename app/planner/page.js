@@ -650,20 +650,20 @@ export default function Planner() {
                     </div>
                   ) : (
                     /* 디자인1: 과목별 체크리스트 */
-                    <div style={{ padding: '12px 18px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-                      <div style={{ flex: 1 }}>
+                    <div style={{ padding: '8px 14px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                      <div style={{ flex: 1, overflow: 'hidden' }}>
                         {Object.entries(grouped).map(([name, { goals: gList, color }]) => (
-                          <div key={name} style={{ marginBottom: '10px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 10px', background: color + '18', borderRadius: '6px', marginBottom: '5px' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: color }} />
-                                <span style={{ fontSize: '13px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
+                          <div key={name} style={{ marginBottom: '3px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1px 6px', background: color + '18', borderLeft: `2px solid ${color}`, marginBottom: '1px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: color }} />
+                                <span style={{ fontSize: '10px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
                               </div>
-                              <span style={{ fontSize: '12px', fontWeight: '600', color }}>{gList.filter(g=>g.done).length}/{gList.length}</span>
+                              <span style={{ fontSize: '9px', fontWeight: '600', color }}>{gList.filter(g=>g.done).length}/{gList.length}</span>
                             </div>
                             {gList.map(g => (
-                              <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 4px', fontSize: '12px', borderBottom: '0.5px solid #F0EAE0' }}>
-                                <span style={{ width: '16px', height: '16px', borderRadius: '4px', background: g.done ? color : '#fff', border: g.done ? 'none' : `1.5px solid ${color}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#fff', flexShrink: 0 }}>{g.done && '✓'}</span>
+                              <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '1px 0', fontSize: '10px' }}>
+                                <span style={{ width: '12px', height: '12px', borderRadius: '2px', background: g.done ? color : '#fff', border: g.done ? 'none' : `1px solid ${color}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', color: '#fff', flexShrink: 0 }}>{g.done && '✓'}</span>
                                 <span style={{ color: g.done ? '#C4B8A8' : '#4A3728', textDecoration: g.done ? 'line-through' : 'none', flex: 1 }}>{renderBlurText(g.cardText || g.text)}</span>
                               </div>
                             ))}
@@ -671,9 +671,9 @@ export default function Planner() {
                         ))}
                       </div>
                       {exportData.showFeedback && feedback && (
-                        <div style={{ borderTop: '1.5px solid #E8E0D4', paddingTop: '10px', marginTop: '6px' }}>
-                          <div style={{ fontSize: '10px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '4px' }}>오늘의 피드백</div>
-                          <div style={{ fontSize: '12px', color: '#4A3728', lineHeight: '1.6', fontStyle: 'italic' }}>"{feedback}"</div>
+                        <div style={{ borderTop: '1px solid #E8E0D4', paddingTop: '6px', marginTop: '4px' }}>
+                          <div style={{ fontSize: '9px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '2px' }}>오늘의 피드백</div>
+                          <div style={{ fontSize: '10px', color: '#4A3728', lineHeight: '1.5', fontStyle: 'italic' }}>"{feedback}"</div>
                         </div>
                       )}
                     </div>
