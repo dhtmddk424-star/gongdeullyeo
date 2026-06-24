@@ -616,7 +616,7 @@ export default function Planner() {
             </div>
 
             {/* 미리보기 카드 (4:5 비율) */}
-            <div id="card-preview" style={{ background: '#3A2E22', borderRadius: '14px', padding: '14px', fontFamily: 'sans-serif', aspectRatio: '4/5', maxWidth: '440px', margin: '0 auto' }}>
+            <div id="card-preview" style={{ background: '#3A2E22', borderRadius: '14px', padding: '14px', fontFamily: 'sans-serif', aspectRatio: '4/5', maxWidth: '440px', margin: '0 auto', letterSpacing: '-0.3px' }}>
               <div style={{ background: '#FAF7F2', borderRadius: '11px', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
                 {/* 헤더 */}
                 <div style={{ padding: '8px 16px 6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E8E0D4' }}>
