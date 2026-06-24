@@ -229,8 +229,11 @@ export default function Planner() {
     const el = document.getElementById('card-preview')
     if (!el) return null
     const html2canvas = (await import('html2canvas')).default
-    el.scrollTop = 0
-    return await html2canvas(el, { scale: 3, backgroundColor: '#3A2E22', useCORS: true })
+    const popup = el.closest('[style*="position: fixed"]')
+    if (popup) popup.scrollTop = 0
+    window.scrollTo(0, 0)
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
+    return await html2canvas(el, { scale: 3, backgroundColor: '#3A2E22', useCORS: true, logging: false })
   }
 
   const downloadCard = async () => {
@@ -664,13 +667,13 @@ export default function Planner() {
                         <div style={{ padding: '6px 14px', flex: '1 1 0', minHeight: 0, overflow: 'hidden' }}>
                           <div style={{ fontSize: '11px', fontWeight: '700', color: '#9A8A78', marginBottom: '4px', letterSpacing: '2px' }}>TASKS</div>
                           {Object.entries(grouped).sort(([,a],[,b]) => (a.isEtc ? 1 : 0) - (b.isEtc ? 1 : 0)).map(([name, { goals: gList, color }]) => (
-                            <div key={name} style={{ marginBottom: '2px' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1px 8px', background: color + '12', borderLeft: `2.5px solid ${color}`, marginBottom: '2px' }}>
+                            <div key={name} style={{ marginBottom: '1px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0px 6px', background: color + '12', borderLeft: `2px solid ${color}`, marginBottom: '1px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                   <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: color }} />
-                                  <span style={{ fontSize: '11px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
+                                  <span style={{ fontSize: '10px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
                                 </div>
-                                <span style={{ fontSize: '10px', fontWeight: '600', color }}>{gList.filter(g=>g.done).length}/{gList.length}</span>
+                                <span style={{ fontSize: '9px', fontWeight: '600', color }}>{gList.filter(g=>g.done).length}/{gList.length}</span>
                               </div>
                               {gList.map(g => (
                                 <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '0.5px 0', fontSize: '10px' }}>
@@ -720,13 +723,13 @@ export default function Planner() {
                       <div style={{ fontSize: '11px', fontWeight: '700', color: '#9A8A78', marginBottom: '4px', letterSpacing: '2px' }}>TASKS</div>
                       <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden' }}>
                         {Object.entries(grouped).sort(([,a],[,b]) => (a.isEtc ? 1 : 0) - (b.isEtc ? 1 : 0)).map(([name, { goals: gList, color }]) => (
-                          <div key={name} style={{ marginBottom: '2px' }}>
+                          <div key={name} style={{ marginBottom: '1px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1px 8px', background: color + '12', borderLeft: `2.5px solid ${color}`, marginBottom: '2px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                 <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: color }} />
-                                <span style={{ fontSize: '11px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
+                                <span style={{ fontSize: '10px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
                               </div>
-                              <span style={{ fontSize: '10px', fontWeight: '600', color }}>{gList.filter(g=>g.done).length}/{gList.length}</span>
+                              <span style={{ fontSize: '9px', fontWeight: '600', color }}>{gList.filter(g=>g.done).length}/{gList.length}</span>
                             </div>
                             {gList.map(g => (
                               <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '0.5px 0', fontSize: '10px' }}>
