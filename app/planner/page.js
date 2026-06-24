@@ -624,12 +624,9 @@ export default function Planner() {
                             <div style={{ fontSize: '12px', color: '#4A3728', lineHeight: '1.4', fontStyle: 'italic' }}>"{feedback}"</div>
                           </div>
                         )}
-                        <div style={{ padding: '2px 14px 6px', textAlign: 'right', flexShrink: 0 }}>
-                          <span style={{ fontSize: '11px', fontWeight: '700', color: '#C9A882', letterSpacing: '1px' }}>공로그</span>
-                        </div>
                       </div>
-                      {/* 세로 구분선 - 카드 맨 아래까지 */}
-                      <div style={{ width: '1px', background: '#E8E0D4' }} />
+                      {/* 세로 구분선 - 공로그 아래까지 연장 */}
+                      <div style={{ width: '1px', background: '#E8E0D4', marginBottom: '-30px' }} />
                       {/* 오른쪽: TIMETABLE */}
                       <div style={{ width: '108px', flexShrink: 0, display: 'flex', flexDirection: 'column', padding: '10px 10px 0' }}>
                         <div style={{ fontSize: '10px', fontWeight: '700', color: '#9A8A78', marginBottom: '5px', letterSpacing: '1px', textAlign: 'right' }}>TIME TABLE</div>
@@ -687,12 +684,10 @@ export default function Planner() {
                   )}
                 </div>
 
-                {/* 하단 - 디자인1만 */}
-                {exportData.design !== 2 && (
-                  <div style={{ padding: '4px 16px 8px', textAlign: 'right' }}>
-                    <span style={{ fontSize: '11px', fontWeight: '700', color: '#C9A882', letterSpacing: '1px' }}>공로그</span>
-                  </div>
-                )}
+                {/* 하단 */}
+                <div style={{ padding: '4px 16px 8px', textAlign: 'right' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '700', color: '#C9A882', letterSpacing: '1px' }}>공로그</span>
+                </div>
               </div>
             </div>
 
