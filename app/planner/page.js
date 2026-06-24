@@ -300,6 +300,7 @@ export default function Planner() {
           <h1 style={{ fontSize: '22px', fontWeight: '500', color: '#4A3728' }}>{isToday ? '오늘의 플래너' : '플래너'}</h1>
           <span onClick={() => { setShowCalendar(!showCalendar); if (!showCalendar && user) fetchCalendarData(user.id) }} style={{ fontSize: '20px', cursor: 'pointer' }} title="달력">📅</span>
         </div>
+        <div style={{ height: '8px' }} />
 
         {/* 달력 (#6) */}
         {showCalendar && (
