@@ -302,7 +302,7 @@ export default function Dashboard() {
         <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1.25rem', marginBottom: '12px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <span style={{ fontSize: '13px', color: '#6B5B45', fontWeight: '500' }}>공부 타이머</span>
-            {new Date().getHours() < 3 && <span style={{ fontSize: '9px', color: '#C4B8A8' }}>새벽 3시까지 당일 집계</span>}
+            {new Date().getHours() < 4 && <span style={{ fontSize: '9px', color: '#C4B8A8' }}>새벽 4시까지 당일 집계</span>}
           </div>
 
           {!timerRunning ? (
@@ -398,14 +398,14 @@ export default function Dashboard() {
                 <div style={{ background: '#FAF7F2', borderRadius: '8px', padding: '8px', marginTop: '4px' }}>
                   <div style={{ display: 'flex', gap: '4px', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap' }}>
                     <select value={addSessFromH} onChange={(e) => setAddSessFromH(e.target.value)} style={{ padding: '3px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '11px', color: '#4A3728' }}>
-                      {[3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,0,1,2].map(h => <option key={h} value={String(h).padStart(2,'0')}>{String(h).padStart(2,'0')}시</option>)}
+                      {[4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,0,1,2,3].map(h => <option key={h} value={String(h).padStart(2,'0')}>{String(h).padStart(2,'0')}시</option>)}
                     </select>
                     <select value={addSessFromM} onChange={(e) => setAddSessFromM(e.target.value)} style={{ padding: '3px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '11px', color: '#4A3728' }}>
                       {['00','10','20','30','40','50'].map(m => <option key={m} value={m}>{m}분</option>)}
                     </select>
                     <span style={{ fontSize: '10px', color: '#9A8A78' }}>~</span>
                     <select value={addSessToH} onChange={(e) => setAddSessToH(e.target.value)} style={{ padding: '3px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '11px', color: '#4A3728' }}>
-                      {[3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,0,1,2].map(h => <option key={h} value={String(h).padStart(2,'0')}>{String(h).padStart(2,'0')}시</option>)}
+                      {[4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,0,1,2,3].map(h => <option key={h} value={String(h).padStart(2,'0')}>{String(h).padStart(2,'0')}시</option>)}
                     </select>
                     <select value={addSessToM} onChange={(e) => setAddSessToM(e.target.value)} style={{ padding: '3px', borderRadius: '4px', border: '0.5px solid #E8E0D4', fontSize: '11px', color: '#4A3728' }}>
                       {['00','10','20','30','40','50'].map(m => <option key={m} value={m}>{m}분</option>)}
