@@ -556,35 +556,35 @@ export default function Planner() {
             {/* 미리보기 카드 (4:5 비율) */}
             <div id="card-preview" style={{ background: '#3A2E22', borderRadius: '14px', padding: '14px', fontFamily: 'sans-serif', aspectRatio: '4/5' }}>
               <div style={{ background: '#FAF7F2', borderRadius: '11px', overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
-                {/* 헤더: 날짜 + 스트릭 */}
-                <div style={{ padding: '10px 16px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E8E0D4' }}>
-                  <div style={{ color: '#4A3728', fontSize: '11px', fontWeight: '500' }}>{dateStr}</div>
-                  {exportData.streakCount > 0 && <div style={{ color: '#C9A882', fontSize: '11px', fontWeight: '600' }}>🔥 {exportData.streakCount}일 연속</div>}
+                {/* 헤더 */}
+                <div style={{ padding: '12px 18px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E8E0D4' }}>
+                  <div style={{ color: '#4A3728', fontSize: '13px', fontWeight: '500' }}>{dateStr}</div>
+                  {exportData.streakCount > 0 && <div style={{ color: '#C9A882', fontSize: '13px', fontWeight: '600' }}>🔥 {exportData.streakCount}일 연속</div>}
                 </div>
 
-                {/* 명언 + 통계 박스 */}
-                <div style={{ padding: '10px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '10px', borderBottom: '1px solid #E8E0D4' }}>
+                {/* 명언 + 통계 */}
+                <div style={{ padding: '10px 18px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '10px', borderBottom: '1px solid #E8E0D4' }}>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '9px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '3px' }}>오늘도 공로그</div>
-                    <div style={{ fontSize: '14px', fontWeight: '600', color: '#4A3728', lineHeight: '1.45', wordBreak: 'keep-all', overflowWrap: 'break-word' }}>{exportData.quote}</div>
+                    <div style={{ fontSize: '10px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '3px' }}>오늘도 공로그</div>
+                    <div style={{ fontSize: '16px', fontWeight: '600', color: '#4A3728', lineHeight: '1.4', wordBreak: 'keep-all', overflowWrap: 'break-word' }}>{exportData.quote}</div>
                   </div>
                   <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
                     {exportData.showTime && (
                       <div style={{ background: '#F5F0E8', borderRadius: '7px', padding: '5px 9px', textAlign: 'center', minWidth: '44px' }}>
-                        <div style={{ fontSize: '7px', color: '#9A8A78', letterSpacing: '0.5px' }}>공부 시간</div>
-                        <div style={{ fontSize: '13px', fontWeight: '700', color: '#4A3728' }}>{exportData.studyTime}</div>
+                        <div style={{ fontSize: '8px', color: '#9A8A78', letterSpacing: '0.5px' }}>공부 시간</div>
+                        <div style={{ fontSize: '14px', fontWeight: '700', color: '#4A3728' }}>{exportData.studyTime}</div>
                       </div>
                     )}
                     {exportData.showRate && (
                       <div style={{ background: '#F5F0E8', borderRadius: '7px', padding: '5px 9px', textAlign: 'center', minWidth: '44px' }}>
-                        <div style={{ fontSize: '7px', color: '#9A8A78', letterSpacing: '0.5px' }}>달성률</div>
-                        <div style={{ fontSize: '13px', fontWeight: '700', color: '#4A3728' }}>{pct}%</div>
+                        <div style={{ fontSize: '8px', color: '#9A8A78', letterSpacing: '0.5px' }}>달성률</div>
+                        <div style={{ fontSize: '14px', fontWeight: '700', color: '#4A3728' }}>{pct}%</div>
                       </div>
                     )}
                     {exportData.showDday && exportData.selectedDday && (
                       <div style={{ background: '#4A3728', borderRadius: '7px', padding: '5px 9px', textAlign: 'center', minWidth: '44px' }}>
-                        <div style={{ fontSize: '7px', color: '#C9A882', letterSpacing: '0.5px' }}>D-DAY</div>
-                        <div style={{ fontSize: '14px', fontWeight: '800', color: '#fff' }}>{getDdayText(exportData.selectedDday)}</div>
+                        <div style={{ fontSize: '8px', color: '#C9A882', letterSpacing: '0.5px' }}>D-DAY</div>
+                        <div style={{ fontSize: '15px', fontWeight: '800', color: '#fff' }}>{getDdayText(exportData.selectedDday)}</div>
                         <div style={{ fontSize: '7px', color: '#C9A882' }}>{exportData.selectedDday.title}</div>
                       </div>
                     )}
@@ -598,20 +598,20 @@ export default function Planner() {
                     <div style={{ display: 'flex', flex: 1 }}>
                       {/* 왼쪽: TASKS + 피드백 */}
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ padding: '10px 12px', flex: 1, overflow: 'hidden' }}>
-                          <div style={{ fontSize: '10px', fontWeight: '700', color: '#9A8A78', marginBottom: '5px', letterSpacing: '2px' }}>TASKS</div>
+                        <div style={{ padding: '10px 14px', flex: 1, overflow: 'hidden' }}>
+                          <div style={{ fontSize: '11px', fontWeight: '700', color: '#9A8A78', marginBottom: '6px', letterSpacing: '2px' }}>TASKS</div>
                           {Object.entries(grouped).map(([name, { goals: gList, color }]) => (
-                            <div key={name} style={{ marginBottom: '5px' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '2px 7px', background: color + '12', borderLeft: `2px solid ${color}`, marginBottom: '2px' }}>
+                            <div key={name} style={{ marginBottom: '6px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 8px', background: color + '12', borderLeft: `2.5px solid ${color}`, marginBottom: '2px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                  <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: color }} />
-                                  <span style={{ fontSize: '11px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
+                                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: color }} />
+                                  <span style={{ fontSize: '12px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
                                 </div>
-                                <span style={{ fontSize: '10px', fontWeight: '600', color }}>{gList.filter(g=>g.done).length}/{gList.length}</span>
+                                <span style={{ fontSize: '11px', fontWeight: '600', color }}>{gList.filter(g=>g.done).length}/{gList.length}</span>
                               </div>
                               {gList.map(g => (
-                                <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '2px 0', fontSize: '11px' }}>
-                                  <span style={{ width: '13px', height: '13px', borderRadius: '3px', background: g.done ? color : '#fff', border: g.done ? 'none' : `1px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#fff', flexShrink: 0 }}>{g.done && '✓'}</span>
+                                <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '2px 0', fontSize: '12px' }}>
+                                  <span style={{ width: '14px', height: '14px', borderRadius: '3px', background: g.done ? color : '#fff', border: g.done ? 'none' : `1px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#fff', flexShrink: 0 }}>{g.done && '✓'}</span>
                                   <span style={{ color: g.done ? '#C4B8A8' : '#4A3728', textDecoration: g.done ? 'line-through' : 'none' }}>{renderBlurText(g.cardText || g.text)}</span>
                                 </div>
                               ))}
@@ -619,17 +619,17 @@ export default function Planner() {
                           ))}
                         </div>
                         {exportData.showFeedback && feedback && (
-                          <div style={{ borderTop: '1px solid #E8E0D4', padding: '8px 12px 10px' }}>
-                            <div style={{ fontSize: '9px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '3px' }}>오늘의 피드백</div>
-                            <div style={{ fontSize: '11px', color: '#4A3728', lineHeight: '1.5', fontStyle: 'italic' }}>"{feedback}"</div>
+                          <div style={{ borderTop: '1px solid #E8E0D4', padding: '8px 14px 10px' }}>
+                            <div style={{ fontSize: '10px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '3px' }}>오늘의 피드백</div>
+                            <div style={{ fontSize: '12px', color: '#4A3728', lineHeight: '1.5', fontStyle: 'italic' }}>"{feedback}"</div>
                           </div>
                         )}
                       </div>
                       {/* 세로 구분선 - 전체 높이 */}
                       <div style={{ width: '1px', background: '#E8E0D4', alignSelf: 'stretch' }} />
                       {/* 오른쪽: TIMETABLE */}
-                      <div style={{ width: '105px', flexShrink: 0, display: 'flex', flexDirection: 'column', padding: '10px 10px' }}>
-                        <div style={{ fontSize: '9px', fontWeight: '700', color: '#9A8A78', marginBottom: '5px', letterSpacing: '1px', textAlign: 'right' }}>TIME TABLE</div>
+                      <div style={{ width: '108px', flexShrink: 0, display: 'flex', flexDirection: 'column', padding: '10px 10px 4px' }}>
+                        <div style={{ fontSize: '10px', fontWeight: '700', color: '#9A8A78', marginBottom: '5px', letterSpacing: '1px', textAlign: 'right' }}>TIME TABLE</div>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1px' }}>
                         {Array.from({ length: 19 }, (_, i) => (i + 7) % 24).map(h => {
                           const slots = sessionSlots[h] || {}
@@ -654,20 +654,20 @@ export default function Planner() {
                     </div>
                   ) : (
                     /* 디자인1: 과목별 체크리스트 */
-                    <div style={{ padding: '10px 16px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                    <div style={{ padding: '10px 18px', display: 'flex', flexDirection: 'column', flex: 1 }}>
                       <div style={{ flex: 1, overflow: 'hidden' }}>
                         {Object.entries(grouped).map(([name, { goals: gList, color }]) => (
-                          <div key={name} style={{ marginBottom: '5px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '2px 7px', background: color + '12', borderLeft: `2px solid ${color}`, marginBottom: '2px' }}>
+                          <div key={name} style={{ marginBottom: '6px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '3px 8px', background: color + '12', borderLeft: `2.5px solid ${color}`, marginBottom: '2px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: color }} />
-                                <span style={{ fontSize: '11px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
+                                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: color }} />
+                                <span style={{ fontSize: '12px', fontWeight: '700', color: '#4A3728' }}>{name}</span>
                               </div>
-                              <span style={{ fontSize: '10px', fontWeight: '600', color }}>{gList.filter(g=>g.done).length}/{gList.length}</span>
+                              <span style={{ fontSize: '11px', fontWeight: '600', color }}>{gList.filter(g=>g.done).length}/{gList.length}</span>
                             </div>
                             {gList.map(g => (
-                              <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '2px 0', fontSize: '11px' }}>
-                                <span style={{ width: '13px', height: '13px', borderRadius: '3px', background: g.done ? color : '#fff', border: g.done ? 'none' : `1px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#fff', flexShrink: 0 }}>{g.done && '✓'}</span>
+                              <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '2px 0', fontSize: '12px' }}>
+                                <span style={{ width: '14px', height: '14px', borderRadius: '3px', background: g.done ? color : '#fff', border: g.done ? 'none' : `1px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#fff', flexShrink: 0 }}>{g.done && '✓'}</span>
                                 <span style={{ color: g.done ? '#C4B8A8' : '#4A3728', textDecoration: g.done ? 'line-through' : 'none', flex: 1 }}>{renderBlurText(g.cardText || g.text)}</span>
                               </div>
                             ))}
@@ -676,8 +676,8 @@ export default function Planner() {
                       </div>
                       {exportData.showFeedback && feedback && (
                         <div style={{ borderTop: '1px solid #E8E0D4', paddingTop: '8px', marginTop: '4px' }}>
-                          <div style={{ fontSize: '9px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '3px' }}>오늘의 피드백</div>
-                          <div style={{ fontSize: '11px', color: '#4A3728', lineHeight: '1.5', fontStyle: 'italic' }}>"{feedback}"</div>
+                          <div style={{ fontSize: '10px', color: '#C9A882', fontWeight: '600', letterSpacing: '1px', marginBottom: '3px' }}>오늘의 피드백</div>
+                          <div style={{ fontSize: '12px', color: '#4A3728', lineHeight: '1.5', fontStyle: 'italic' }}>"{feedback}"</div>
                         </div>
                       )}
                     </div>
@@ -685,8 +685,8 @@ export default function Planner() {
                 </div>
 
                 {/* 하단 */}
-                <div style={{ padding: '4px 14px 6px', textAlign: 'right' }}>
-                  <span style={{ fontSize: '10px', fontWeight: '700', color: '#C9A882', letterSpacing: '1px' }}>공로그</span>
+                <div style={{ padding: '4px 16px 8px', textAlign: 'right' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '700', color: '#C9A882', letterSpacing: '1px' }}>공로그</span>
                 </div>
               </div>
             </div>
