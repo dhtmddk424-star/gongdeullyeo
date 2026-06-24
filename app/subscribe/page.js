@@ -83,10 +83,10 @@ export default function Subscribe() {
             {/* 가격 + 구독 버튼 */}
             <div style={{ background: '#fff', borderRadius: '16px', border: '0.5px solid #E8E0D4', padding: '2rem', marginBottom: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '4px', marginBottom: '8px' }}>
-                <span style={{ fontSize: '36px', fontWeight: '600', color: '#4A3728' }}>4,900</span>
+                <span style={{ fontSize: '36px', fontWeight: '600', color: '#4A3728' }}>3,900</span>
                 <span style={{ fontSize: '16px', color: '#9A8A78' }}>원/월</span>
               </div>
-              <p style={{ fontSize: '13px', color: '#C4B8A8', marginBottom: '20px' }}>언제든 해지 가능 · 첫 7일 무료 체험</p>
+              <p style={{ fontSize: '13px', color: '#C4B8A8', marginBottom: '20px' }}>월 구독 · 언제든 해지 가능</p>
               <button onClick={handleSubscribe} style={{ width: '100%', background: '#C9A882', color: '#fff', border: 'none', borderRadius: '24px', padding: '14px', fontSize: '16px', cursor: 'pointer', fontWeight: '500' }}>
                 프리미엄 시작하기
               </button>
