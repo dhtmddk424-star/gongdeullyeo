@@ -407,7 +407,7 @@ export default function Dashboard() {
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '120px', gap: '8px' }}>
             {weeklyStats.map((s, i) => (
               <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                <span style={{ fontSize: '11px', color: '#9A8A78' }}>{s.total > 0 ? `${s.total}분` : ''}</span>
+                <span style={{ fontSize: '11px', color: '#9A8A78' }}>{s.total > 0 ? (s.total >= 60 ? `${Math.floor(s.total/60)}h${s.total%60 > 0 ? s.total%60+'m' : ''}` : `${s.total}m`) : ''}</span>
                 <div style={{ width: '100%', maxWidth: '40px', background: s.total > 0 ? '#C9A882' : '#F0EAE0', borderRadius: '4px 4px 0 0', height: `${Math.max(4, (s.total / maxMinutes) * 100)}px`, transition: 'height 0.3s' }} />
                 <span style={{ fontSize: '12px', color: '#6B5B45' }}>{s.dayName}</span>
                 <span style={{ fontSize: '10px', color: '#C4B8A8' }}>{s.dayNum}</span>
