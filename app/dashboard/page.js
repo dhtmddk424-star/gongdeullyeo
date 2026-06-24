@@ -357,7 +357,7 @@ export default function Dashboard() {
                           <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: sub?.color || '#C9A882' }} />
                           <span style={{ color: '#4A3728' }}>{name}</span>
                         </div>
-                        <span style={{ color: '#C9A882', fontWeight: '500' }}>{min}분</span>
+                        <span style={{ color: '#C9A882', fontWeight: '500' }}>{min >= 60 ? `${Math.floor(min/60)}H ${min%60}M` : `${min}M`}</span>
                       </div>
                     )
                   })
@@ -381,7 +381,7 @@ export default function Dashboard() {
                 {/* 총 시간 */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0 0', fontSize: '14px', fontWeight: '500', borderTop: '0.5px solid #F0EAE0', marginTop: '4px' }}>
                   <span style={{ color: '#6B5B45' }}>총 공부시간</span>
-                  <span style={{ color: '#C9A882' }}>{(() => { const t = sessions.reduce((s, v) => s + v.duration_minutes, 0); return t >= 60 ? `${Math.floor(t/60)}시간 ${t%60}분` : `${t}분` })()}</span>
+                  <span style={{ color: '#C9A882' }}>{(() => { const t = sessions.reduce((s, v) => s + v.duration_minutes, 0); return t >= 60 ? `${Math.floor(t/60)}H ${t%60}M` : `${t}M` })()}</span>
                 </div>
               </>
             )}
@@ -410,7 +410,7 @@ export default function Dashboard() {
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '120px', gap: '8px' }}>
             {weeklyStats.map((s, i) => (
               <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                <span style={{ fontSize: '11px', color: '#9A8A78' }}>{s.total > 0 ? (s.total >= 60 ? `${Math.floor(s.total/60)}h${s.total%60 > 0 ? s.total%60+'m' : ''}` : `${s.total}m`) : ''}</span>
+                <span style={{ fontSize: '11px', color: '#9A8A78' }}>{s.total > 0 ? (s.total >= 60 ? `${Math.floor(s.total/60)}H${s.total%60 > 0 ? ' '+s.total%60+'M' : ''}` : `${s.total}M`) : ''}</span>
                 <div style={{ width: '100%', maxWidth: '40px', background: s.total > 0 ? '#C9A882' : '#F0EAE0', borderRadius: '4px 4px 0 0', height: `${Math.max(4, (s.total / maxMinutes) * 100)}px`, transition: 'height 0.3s' }} />
                 <span style={{ fontSize: '12px', color: '#6B5B45' }}>{s.dayName}</span>
                 <span style={{ fontSize: '10px', color: '#C4B8A8' }}>{s.dayNum}</span>
