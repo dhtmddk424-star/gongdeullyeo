@@ -631,7 +631,7 @@ export default function Planner() {
                       {/* 세로 구분선 */}
                       <div style={{ width: '1px', background: '#E8E0D4' }} />
                       {/* 오른쪽: TIMETABLE */}
-                      <div style={{ width: '108px', flexShrink: 0, display: 'flex', flexDirection: 'column', padding: '10px 10px 0' }}>
+                      <div style={{ width: '108px', flexShrink: 0, display: 'flex', flexDirection: 'column', padding: '10px 10px 8px' }}>
                         <div style={{ fontSize: '10px', fontWeight: '700', color: '#9A8A78', marginBottom: '5px', letterSpacing: '1px', textAlign: 'right' }}>TIME TABLE</div>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1px' }}>
                         {Array.from({ length: 19 }, (_, i) => (i + 7) % 24).map(h => {
