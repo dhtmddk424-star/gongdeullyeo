@@ -36,7 +36,10 @@ export default function Memo() {
     }
   }
 
-  const selectMemo = (memo) => {
+  const selectMemo = async (memo) => {
+    if (selectedId && (title !== memos.find(m => m.id === selectedId)?.title || content !== memos.find(m => m.id === selectedId)?.content)) {
+      await save()
+    }
     setSelectedId(memo.id)
     setTitle(memo.title || '')
     setContent(memo.content || '')
@@ -63,6 +66,7 @@ export default function Memo() {
   }
 
   const deleteMemo = async (id) => {
+    if (!confirm('이 메모를 삭제하시겠습니까?')) return
     await supabase.from('memos').delete().eq('id', id)
     const remaining = memos.filter(m => m.id !== id)
     setMemos(remaining)
@@ -77,6 +81,19 @@ export default function Memo() {
     const timer = setTimeout(() => { save() }, 2000)
     return () => clearTimeout(timer)
   }, [title, content])
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (user && selectedId) {
+        navigator.sendBeacon('/api/memo-save', JSON.stringify({ id: selectedId, title, content }))
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      if (user && selectedId) save()
+    }
+  }, [selectedId, title, content])
 
   if (loading) return <main style={{ minHeight: '100vh', background: '#FAF7F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: '#9A8A78' }}>불러오는 중...</p></main>
 
