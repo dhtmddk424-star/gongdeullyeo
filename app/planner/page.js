@@ -148,7 +148,8 @@ export default function Planner() {
   const addGoal = async () => {
     if (requireLogin()) return
     if (!newGoal.trim()) return
-    const { data } = await supabase.from('goals').insert({ user_id: user.id, text: newGoal, done: false, date: selectedDate, subject_id: selectedSubject }).select()
+    const sub = subjects.find(s => s.id === selectedSubject)
+    const { data } = await supabase.from('goals').insert({ user_id: user.id, text: newGoal, done: false, date: selectedDate, subject_id: selectedSubject, subject_name: sub?.name || null, subject_color: sub?.color || null }).select()
     if (data) setGoals([...goals, data[0]])
     setNewGoal('')
   }
@@ -166,8 +167,9 @@ export default function Planner() {
   }
 
   const updateGoalSubject = async (goalId, subjectId) => {
-    await supabase.from('goals').update({ subject_id: subjectId || null }).eq('id', goalId)
-    setGoals(goals.map(g => g.id === goalId ? { ...g, subject_id: subjectId || null } : g))
+    const sub = subjects.find(s => s.id === subjectId)
+    await supabase.from('goals').update({ subject_id: subjectId || null, subject_name: sub?.name || null, subject_color: sub?.color || null }).eq('id', goalId)
+    setGoals(goals.map(g => g.id === goalId ? { ...g, subject_id: subjectId || null, subject_name: sub?.name || null, subject_color: sub?.color || null } : g))
   }
 
   const saveFeedback = async () => {
@@ -301,7 +303,10 @@ export default function Planner() {
       <section style={{ maxWidth: '600px', margin: '0 auto', padding: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
           <h1 style={{ fontSize: '22px', fontWeight: '500', color: '#4A3728' }}>{isToday ? '오늘의 플래너' : '플래너'}</h1>
-          <span onClick={() => { setShowCalendar(!showCalendar); if (!showCalendar && user) fetchCalendarData(user.id) }} style={{ fontSize: '20px', cursor: 'pointer' }} title="달력">📅</span>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <span onClick={() => { setShowCalendar(!showCalendar); if (!showCalendar && user) fetchCalendarData(user.id) }} style={{ fontSize: '20px', cursor: 'pointer' }} title="달력">📅</span>
+            <span onClick={() => router.push('/memo')} style={{ fontSize: '20px', cursor: 'pointer' }} title="메모">📝</span>
+          </div>
         </div>
         <div style={{ height: '8px' }} />
 
@@ -392,7 +397,7 @@ export default function Planner() {
               return aIdx - bIdx
             })
             return sorted.map(goal => {
-              const sub = subjects.find(s => s.id === goal.subject_id)
+              const sub = subjects.find(s => s.id === goal.subject_id) || (goal.subject_name ? { name: goal.subject_name, color: goal.subject_color, id: null } : null)
               const isAssigning = assigningGoalId === goal.id
               return (
                 <div key={goal.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', borderBottom: '0.5px solid #F0EAE0' }}>
@@ -471,7 +476,7 @@ export default function Planner() {
         const pct = goals.length ? Math.round((dc / goals.length) * 100) : 0
         const grouped = {}
         cardGoals.forEach(g => {
-          const sub = subjects.find(s => s.id === g.subject_id)
+          const sub = subjects.find(s => s.id === g.subject_id) || (g.subject_name ? { name: g.subject_name, color: g.subject_color } : null)
           const key = sub ? sub.name : '기타'
           if (!grouped[key]) grouped[key] = { goals: [], color: sub?.color || '#9A8A78', isEtc: !sub }
           grouped[key].goals.push(g)
