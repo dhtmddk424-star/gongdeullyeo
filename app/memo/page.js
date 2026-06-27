@@ -136,15 +136,21 @@ export default function Memo() {
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 onKeyDown={(e) => {
+                  const ta = e.target
+                  const start = ta.selectionStart
+                  const end = ta.selectionEnd
                   if (e.key === 'Tab') {
                     e.preventDefault()
-                    const ta = e.target
-                    const start = ta.selectionStart
-                    const end = ta.selectionEnd
-                    const indent = '    '
+                    const indent = '\t'
                     const newContent = content.substring(0, start) + indent + content.substring(end)
                     setContent(newContent)
-                    setTimeout(() => { ta.selectionStart = ta.selectionEnd = start + indent.length }, 0)
+                    setTimeout(() => { ta.selectionStart = ta.selectionEnd = start + 1 }, 0)
+                  }
+                  if (e.key === 'Backspace' && start === end && start > 0 && content[start - 1] === '\t') {
+                    e.preventDefault()
+                    const newContent = content.substring(0, start - 1) + content.substring(end)
+                    setContent(newContent)
+                    setTimeout(() => { ta.selectionStart = ta.selectionEnd = start - 1 }, 0)
                   }
                 }}
                 placeholder="자유롭게 메모하세요..."
@@ -152,6 +158,7 @@ export default function Memo() {
                   width: '100%', minHeight: '400px', padding: '16px 20px', border: 'none', outline: 'none',
                   fontSize: '14px', lineHeight: '20px', color: '#4A3728', background: 'transparent',
                   resize: 'vertical', boxSizing: 'border-box', fontFamily: 'sans-serif', position: 'relative', zIndex: 1,
+                  tabSize: 4, MozTabSize: 4,
                 }}
               />
             </div>
