@@ -132,8 +132,21 @@ export default function Memo() {
                 pointerEvents: 'none',
               }} />
               <textarea
+                id="memo-textarea"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Tab') {
+                    e.preventDefault()
+                    const ta = e.target
+                    const start = ta.selectionStart
+                    const end = ta.selectionEnd
+                    const indent = '    '
+                    const newContent = content.substring(0, start) + indent + content.substring(end)
+                    setContent(newContent)
+                    setTimeout(() => { ta.selectionStart = ta.selectionEnd = start + indent.length }, 0)
+                  }
+                }}
                 placeholder="자유롭게 메모하세요..."
                 style={{
                   width: '100%', minHeight: '400px', padding: '16px 20px', border: 'none', outline: 'none',
