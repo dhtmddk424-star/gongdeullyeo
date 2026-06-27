@@ -427,6 +427,13 @@ export default function Planner() {
                   ) : (
                     <span onClick={() => { if (requireLogin()) return; setEditingGoalId(goal.id); setEditGoalText(goal.text) }} style={{ flex: 1, fontSize: '14px', color: goal.done ? '#C4B8A8' : '#4A3728', textDecoration: goal.done ? 'line-through' : 'none', cursor: 'text' }}>{goal.text}</span>
                   )}
+                  <span onClick={async () => {
+                    const d = new Date(selectedDate + 'T00:00:00')
+                    d.setDate(d.getDate() + 1)
+                    const nextDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+                    await supabase.from('goals').update({ date: nextDate, done: false }).eq('id', goal.id)
+                    setGoals(goals.filter(g => g.id !== goal.id))
+                  }} style={{ fontSize: '12px', color: '#C9A882', cursor: 'pointer' }} title="내일로 미루기">→</span>
                   <span onClick={() => deleteGoal(goal.id)} style={{ fontSize: '16px', color: '#D4C8B8', cursor: 'pointer' }}>×</span>
                 </div>
               )
