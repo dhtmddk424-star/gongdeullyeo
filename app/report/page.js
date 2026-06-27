@@ -14,6 +14,9 @@ export default function Report() {
   const [generating, setGenerating] = useState(false)
   const [report, setReport] = useState(null)
   const [stats, setStats] = useState({ totalMinutes: 0, totalGoals: 0, doneGoals: 0, streakDays: 0, subjects: [] })
+  const [rawGoals, setRawGoals] = useState([])
+  const [rawSessions, setRawSessions] = useState([])
+  const [rawFeedback, setRawFeedback] = useState([])
 
   useEffect(() => {
     const load = async () => {
@@ -35,14 +38,18 @@ export default function Report() {
     weekAgo.setDate(weekAgo.getDate() - 7)
     const weekStr = weekAgo.toISOString().split('T')[0]
 
-    const [sessionsRes, goalsRes, streakRes] = await Promise.all([
+    const [sessionsRes, goalsRes, streakRes, feedbackRes] = await Promise.all([
       supabase.from('study_sessions').select('*').eq('user_id', uid).gte('date', weekStr),
       supabase.from('goals').select('*').eq('user_id', uid).gte('date', weekStr),
       supabase.from('streaks').select('date').eq('user_id', uid).order('date', { ascending: false }).limit(30),
+      supabase.from('daily_feedback').select('*').eq('user_id', uid).gte('date', weekStr),
     ])
 
     const sessions = sessionsRes.data || []
     const goals = goalsRes.data || []
+    setRawGoals(goals)
+    setRawSessions(sessions)
+    setRawFeedback(feedbackRes.data || [])
     const streaks = streakRes.data || []
 
     const subjectMap = {}
@@ -93,29 +100,27 @@ export default function Report() {
     })
   }
 
-  const generateReport = () => {
+  const generateReport = async () => {
     setGenerating(true)
-    // AI 리포트 생성 (추후 Anthropic API 연동)
-    setTimeout(() => {
-      const pct = stats.avgRate || 0
-      const totalHours = (stats.totalMinutes / 60).toFixed(1)
-      const topSubject = stats.subjects[0]?.name || '기록 없음'
-
-      setReport({
-        summary: `이번 주 총 ${totalHours}시간 공부했고, 목표 달성률은 ${pct}%입니다.`,
-        highlights: [
-          `가장 많이 공부한 과목: ${topSubject}`,
-          `${stats.streakDays}일 연속 출석 중`,
-          `총 ${stats.totalGoals}개 목표 중 ${stats.doneGoals}개 완료`,
-        ],
-        suggestion: pct >= 80
-          ? '목표 달성률이 높아요! 난이도를 조금 올려보는 건 어떨까요?'
-          : pct >= 50
-          ? '꾸준히 하고 있어요. 하루 목표를 2~3개로 줄이고 달성률을 높여보세요.'
-          : '목표를 작게 쪼개보세요. 작은 성취감이 습관을 만들어요.',
+    try {
+      const res = await fetch('/api/ai-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          goals: rawGoals,
+          sessions: rawSessions,
+          feedback: rawFeedback,
+          subjects: stats.subjects,
+          stats: { totalMinutes: stats.totalMinutes, avgRate: stats.avgRate, streakDays: stats.streakDays, activeDays: stats.activeDays }
+        })
       })
-      setGenerating(false)
-    }, 2000)
+      const data = await res.json()
+      if (data.result) setReport(data.result)
+      else setReport({ summary: '분석을 처리할 수 없습니다. 다시 시도해주세요.', content_analysis: '', strengths: [], improvements: [], weekly_tip: '', subject_balance: '', study_pattern: '' })
+    } catch {
+      setReport({ summary: '서버 오류가 발생했습니다.', content_analysis: '', strengths: [], improvements: [], weekly_tip: '', subject_balance: '', study_pattern: '' })
+    }
+    setGenerating(false)
   }
 
   if (loading) return <main style={{ minHeight: '100vh', background: '#FAF7F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: '#9A8A78' }}>불러오는 중...</p></main>
@@ -244,25 +249,65 @@ export default function Report() {
         {/* AI 리포트 생성 */}
         {!report ? (
           <button onClick={generateReport} disabled={generating} style={{ width: '100%', background: '#C9A882', color: '#fff', border: 'none', borderRadius: '24px', padding: '14px', fontSize: '15px', cursor: 'pointer', fontWeight: '500' }}>
-            {generating ? 'AI 분석 중...' : 'AI 리포트 생성하기'}
+            {generating ? 'AI가 학습 데이터를 분석하고 있어요...' : 'AI 리포트 생성하기'}
           </button>
         ) : (
-          <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1.5rem' }}>
-            <h3 style={{ fontSize: '15px', color: '#4A3728', marginBottom: '12px' }}>AI 분석 결과</h3>
-            <p style={{ fontSize: '14px', color: '#6B5B45', lineHeight: '1.7', marginBottom: '16px' }}>{report.summary}</p>
-
-            <div style={{ marginBottom: '16px' }}>
-              {report.highlights.map((h, i) => (
-                <div key={i} style={{ fontSize: '13px', color: '#9A8A78', padding: '4px 0' }}>• {h}</div>
-              ))}
+          <div>
+            {/* 요약 */}
+            <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1.25rem', marginBottom: '12px' }}>
+              <div style={{ fontSize: '13px', color: '#C9A882', fontWeight: '600', marginBottom: '8px' }}>📊 종합 요약</div>
+              <p style={{ fontSize: '14px', color: '#4A3728', lineHeight: '1.7', margin: 0 }}>{report.summary}</p>
             </div>
 
-            <div style={{ background: '#FAF0E4', borderRadius: '8px', padding: '12px', marginBottom: '12px' }}>
-              <span style={{ fontSize: '12px', color: '#C9A882', fontWeight: '500', display: 'block', marginBottom: '4px' }}>AI 제안</span>
-              <p style={{ fontSize: '13px', color: '#6B5B45', margin: 0, lineHeight: '1.6' }}>{report.suggestion}</p>
+            {/* 학습 내용 분석 */}
+            {report.content_analysis && (
+              <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1.25rem', marginBottom: '12px' }}>
+                <div style={{ fontSize: '13px', color: '#C9A882', fontWeight: '600', marginBottom: '8px' }}>📝 학습 내용 분석</div>
+                <p style={{ fontSize: '13px', color: '#6B5B45', lineHeight: '1.7', margin: 0 }}>{report.content_analysis}</p>
+              </div>
+            )}
+
+            {/* 과목 균형 + 공부 패턴 */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+              {report.subject_balance && (
+                <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1rem' }}>
+                  <div style={{ fontSize: '12px', color: '#C9A882', fontWeight: '600', marginBottom: '6px' }}>⚖️ 과목 균형</div>
+                  <p style={{ fontSize: '12px', color: '#6B5B45', lineHeight: '1.6', margin: 0 }}>{report.subject_balance}</p>
+                </div>
+              )}
+              {report.study_pattern && (
+                <div style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #E8E0D4', padding: '1rem' }}>
+                  <div style={{ fontSize: '12px', color: '#C9A882', fontWeight: '600', marginBottom: '6px' }}>🕐 공부 패턴</div>
+                  <p style={{ fontSize: '12px', color: '#6B5B45', lineHeight: '1.6', margin: 0 }}>{report.study_pattern}</p>
+                </div>
+              )}
             </div>
 
-            <button onClick={() => setReport(null)} style={{ background: '#F0EAE0', color: '#9A8A78', border: 'none', borderRadius: '20px', padding: '8px 20px', fontSize: '13px', cursor: 'pointer' }}>다시 생성</button>
+            {/* 잘한 점 + 개선할 점 */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+              {report.strengths && report.strengths.length > 0 && (
+                <div style={{ background: '#F0F7F1', borderRadius: '12px', border: '0.5px solid #C8DEC9', padding: '1rem' }}>
+                  <div style={{ fontSize: '12px', color: '#5A8A5E', fontWeight: '600', marginBottom: '8px' }}>💪 잘한 점</div>
+                  {report.strengths.map((s, i) => <div key={i} style={{ fontSize: '12px', color: '#4A3728', padding: '2px 0', lineHeight: '1.5' }}>• {s}</div>)}
+                </div>
+              )}
+              {report.improvements && report.improvements.length > 0 && (
+                <div style={{ background: '#FFF5F0', borderRadius: '12px', border: '0.5px solid #E8C9B8', padding: '1rem' }}>
+                  <div style={{ fontSize: '12px', color: '#C47E5A', fontWeight: '600', marginBottom: '8px' }}>📌 개선할 점</div>
+                  {report.improvements.map((s, i) => <div key={i} style={{ fontSize: '12px', color: '#4A3728', padding: '2px 0', lineHeight: '1.5' }}>• {s}</div>)}
+                </div>
+              )}
+            </div>
+
+            {/* 다음 주 조언 */}
+            {report.weekly_tip && (
+              <div style={{ background: '#FAF0E4', borderRadius: '12px', border: '1px solid #E8D9C8', padding: '1rem', marginBottom: '12px' }}>
+                <div style={{ fontSize: '12px', color: '#C9A882', fontWeight: '600', marginBottom: '6px' }}>💡 다음 주를 위한 조언</div>
+                <p style={{ fontSize: '13px', color: '#4A3728', lineHeight: '1.7', margin: 0 }}>{report.weekly_tip}</p>
+              </div>
+            )}
+
+            <button onClick={() => setReport(null)} style={{ width: '100%', background: '#F0EAE0', color: '#9A8A78', border: 'none', borderRadius: '20px', padding: '10px', fontSize: '13px', cursor: 'pointer' }}>다시 생성</button>
           </div>
         )}
       </section>
