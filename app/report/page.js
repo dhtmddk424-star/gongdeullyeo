@@ -17,6 +17,8 @@ export default function Report() {
   const [rawGoals, setRawGoals] = useState([])
   const [rawSessions, setRawSessions] = useState([])
   const [rawFeedback, setRawFeedback] = useState([])
+  const [history, setHistory] = useState([])
+  const [viewingHistory, setViewingHistory] = useState(null)
 
   useEffect(() => {
     const load = async () => {
@@ -27,6 +29,8 @@ export default function Report() {
       setIsPremium(premium)
       if (!premium) { router.push('/subscribe'); return }
       await fetchStats(user.id)
+      const { data: hist } = await supabase.from('report_history').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+      setHistory(hist || [])
       setLoading(false)
     }
     load()
@@ -115,7 +119,14 @@ export default function Report() {
         })
       })
       const data = await res.json()
-      if (data.result) setReport(data.result)
+      if (data.result) {
+        setReport(data.result)
+        const { data: saved } = await supabase.from('report_history').insert({
+          user_id: user.id, period: tab, stats: { totalMinutes: stats.totalMinutes, avgRate: stats.avgRate, streakDays: stats.streakDays, activeDays: stats.activeDays, subjects: stats.subjects },
+          report: data.result
+        }).select()
+        if (saved) setHistory([saved[0], ...history])
+      }
       else setReport({ summary: '분석을 처리할 수 없습니다. 다시 시도해주세요.', content_analysis: '', strengths: [], improvements: [], weekly_tip: '', subject_balance: '', study_pattern: '' })
     } catch {
       setReport({ summary: '서버 오류가 발생했습니다.', content_analysis: '', strengths: [], improvements: [], weekly_tip: '', subject_balance: '', study_pattern: '' })
@@ -307,8 +318,30 @@ export default function Report() {
               </div>
             )}
 
-            <button onClick={() => setReport(null)} style={{ width: '100%', background: '#F0EAE0', color: '#9A8A78', border: 'none', borderRadius: '20px', padding: '10px', fontSize: '13px', cursor: 'pointer' }}>다시 생성</button>
+            <button onClick={() => setReport(null)} style={{ width: '100%', background: '#F0EAE0', color: '#9A8A78', border: 'none', borderRadius: '20px', padding: '10px', fontSize: '13px', cursor: 'pointer' }}>새로 생성</button>
           </div>
+        )}
+
+        {/* 과거 리포트 */}
+        {history.length > 0 && !viewingHistory && (
+          <div style={{ marginTop: '20px' }}>
+            <div style={{ fontSize: '13px', color: '#6B5B45', fontWeight: '500', marginBottom: '10px' }}>지난 리포트</div>
+            {history.map(h => (
+              <div key={h.id} onClick={() => { setViewingHistory(h); setReport(h.report) }} style={{ background: '#fff', borderRadius: '10px', border: '0.5px solid #E8E0D4', padding: '12px 16px', marginBottom: '8px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <span style={{ fontSize: '13px', color: '#4A3728' }}>{new Date(h.created_at).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })}</span>
+                  <span style={{ fontSize: '11px', color: '#9A8A78', marginLeft: '8px' }}>{h.period === 'weekly' ? '주간' : '월간'}</span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#C9A882' }}>
+                  {h.stats?.totalMinutes >= 60 ? `${Math.floor(h.stats.totalMinutes/60)}H` : `${h.stats?.totalMinutes || 0}M`} · {h.stats?.avgRate || 0}%
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {viewingHistory && (
+          <button onClick={() => { setViewingHistory(null); setReport(null) }} style={{ width: '100%', marginTop: '12px', background: '#F0EAE0', color: '#9A8A78', border: 'none', borderRadius: '20px', padding: '10px', fontSize: '13px', cursor: 'pointer' }}>현재 리포트로 돌아가기</button>
         )}
       </section>
     </main>
