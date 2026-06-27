@@ -131,7 +131,7 @@ export default function Profile() {
               <span style={{ fontSize: '16px', fontWeight: '600', color: '#4A3728', letterSpacing: '2px', flex: 1 }}>{referralCode}</span>
               <button onClick={() => { navigator.clipboard.writeText(referralCode); setReferralMsg('복사됨!'); setTimeout(() => setReferralMsg(''), 1500) }} style={{ background: '#C9A882', color: '#fff', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '11px', cursor: 'pointer' }}>복사</button>
             </div>
-            <div style={{ fontSize: '11px', color: '#9A8A78', marginTop: '4px' }}>친구가 이 코드로 가입하면 서로 1,000원 적립! ({referralCount}명 초대됨)</div>
+            <div style={{ fontSize: '11px', color: '#9A8A78', marginTop: '4px' }}>친구가 이 코드로 가입하면 서로 500원 적립! ({referralCount}명 초대됨)</div>
           </div>
 
           <div style={{ marginBottom: '8px' }}>
@@ -143,7 +143,7 @@ export default function Profile() {
                 setReferralMsg('')
                 const res = await fetch('/api/referral', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ inviteeId: user.id, referralCode: inputCode }) })
                 const data = await res.json()
-                if (data.success) { setReferralMsg(data.message); setCredits(credits + 1000); setInputCode('') }
+                if (data.success) { setReferralMsg(data.message); setCredits(credits + 500); setInputCode('') }
                 else setReferralMsg(data.error)
               }} style={{ background: '#4A3728', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 14px', fontSize: '12px', cursor: 'pointer' }}>적용</button>
             </div>
