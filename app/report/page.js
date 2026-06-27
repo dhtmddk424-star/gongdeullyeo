@@ -36,11 +36,16 @@ export default function Report() {
     load()
   }, [router])
 
+  useEffect(() => {
+    if (user) { fetchStats(user.id); setReport(null); setViewingHistory(null) }
+  }, [tab])
+
   const fetchStats = async (uid) => {
+    const days = tab === 'monthly' ? 30 : 7
     const now = new Date()
-    const weekAgo = new Date(now)
-    weekAgo.setDate(weekAgo.getDate() - 7)
-    const weekStr = weekAgo.toISOString().split('T')[0]
+    const ago = new Date(now)
+    ago.setDate(ago.getDate() - days)
+    const weekStr = ago.toISOString().split('T')[0]
 
     const [sessionsRes, goalsRes, streakRes, feedbackRes] = await Promise.all([
       supabase.from('study_sessions').select('*').eq('user_id', uid).gte('date', weekStr),
